@@ -7,10 +7,19 @@ import time
 
 from twspy.ib.EClientSocket import EClientSocket
 from twspy.ib.EWrapper import EWrapper
+from twspy.ib.ExecutionFilter import ExecutionFilter
 
 TWS_HOST = os.environ.get('TWS_HOST', '127.0.0.1')
 TWS_PORT = int(os.environ.get('TWS_PORT', 7496))
 TWS_CLID = int(os.environ.get('TWS_CLID', 0))
+
+def sleep_until(func, secs):
+    start = time.time()
+    while not func():
+        if time.time() - start >= secs:
+            return False
+        time.sleep(0.1)
+    return True
 
 def test_client():
     functions = {}
@@ -36,10 +45,18 @@ def test_client():
     con = EClientSocket(MyWrapper())
     con.eConnect(TWS_HOST, TWS_PORT, TWS_CLID)
     assert con.isConnected()
-    for i in range(10):
-        if 'nextValidId' in seen:
-            break
-        time.sleep(0.1)
+    assert sleep_until(lambda: 'nextValidId' in seen, 1.0)
     assert seen['nextValidId']['orderId'] > 0
+
+    con.reqCurrentTime()
+    assert sleep_until(lambda: 'currentTime' in seen, 1.0)
+    assert seen['currentTime']['time'] > 0
+
+    con.reqAccountUpdates(True, '')
+    assert sleep_until(lambda: 'accountDownloadEnd' in seen, 1.0)
+
+    con.reqExecutions(1, ExecutionFilter)
+    assert sleep_until(lambda: 'execDetailsEnd' in seen, 1.0)
+
     con.eDisconnect()
     assert not con.isConnected()

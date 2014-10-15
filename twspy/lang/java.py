@@ -2,6 +2,8 @@ import socket
 import sys
 import threading
 
+from .python import long
+
 
 class Boolean(object):
     pass
@@ -9,6 +11,7 @@ class Boolean(object):
 
 class Double(object):
     MAX_VALUE = sys.float_info.max
+    parseDouble = float
 
 
 class Integer(object):
@@ -17,7 +20,7 @@ class Integer(object):
 
 
 class Long(object):
-    pass
+    parseLong = long
 
 
 class Cloneable(object):

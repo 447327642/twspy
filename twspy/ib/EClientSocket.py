@@ -14,7 +14,7 @@ def synchronized(call):
             return call(*args, **kwds)
     return inner
 
-from ..lang.python import overloaded
+from ..lang.python import long, overloaded
 from ..lang.java import DataInputStream, DataOutputStream, Double, Integer, Socket
 from .Builder import Builder
 from .EClientErrors import EClientErrors
@@ -106,7 +106,7 @@ class EClientSocket(object):
     #  62 = can receive avgCost in position message
     CLIENT_VERSION = 62
     SERVER_VERSION = 38
-    EOL = [0]
+    EOL = chr(0).encode()
     BAG_SEC_TYPE = "BAG"
 
     #  FA msg data types
@@ -286,7 +286,7 @@ class EClientSocket(object):
         self.m_reader = self.createReader(self, DataInputStream(socket.getInputStream()))
         #  check server version
         self.m_serverVersion = self.m_reader.readInt()
-        print("Server Version:" + self.m_serverVersion)
+        print("Server Version:" + str(self.m_serverVersion))
         if self.m_serverVersion >= 20:
             self.m_TwsTime = self.m_reader.readStr()
             print("TWS Time at connection:" + self.m_TwsTime)
@@ -1742,7 +1742,7 @@ class EClientSocket(object):
         #  write string to data buffer; writer thread will
         #  write it to socket
         if not self.IsEmpty(str_):
-            self.m_dos.write(str_.getBytes())
+            self.m_dos.write(str_.encode())
         self.sendEOL()
 
     def sendEOL(self):
@@ -1754,7 +1754,7 @@ class EClientSocket(object):
         """ generated source for method send_0 """
         self.send(str(val))
 
-    @send.register(object, str)
+    @send.register(object, chr)
     def send_1(self, val):
         """ generated source for method send_1 """
         self.m_dos.write(val)

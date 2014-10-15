@@ -4,8 +4,9 @@ from .overloading import overloaded
 
 if sys.version_info[0] >= 3:
     cmp = lambda x, y: (x > y) - (x < y)
+    long = int
 else:
-    from __builtin__ import cmp
+    from __builtin__ import cmp, long
 
 
 class classmethod(classmethod):

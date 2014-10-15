@@ -889,7 +889,7 @@ class EReader(Thread):
             c = self.m_dis.readByte()
             if c == 0:
                 break
-            buf.append(str(c))
+            buf.append(chr(c))
         str_ = buf.__str__()
         return None if 0 == len(str_) else str_
 

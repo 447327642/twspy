@@ -1,3 +1,6 @@
+from java2python.lang import tokens
+from java2python.lib import FS
+
 modulePrologueHandlers = [
     'from ..lang.python import overloaded',
     'from ..lang.java import Boolean, Double, Integer, Long, StringBuffer, Thread, Vector',
@@ -31,4 +34,18 @@ moduleOutputSubs = [
     ]
 ]
 
-typeSubs = {'EClientSocket': 'object', 'DataInputStream': 'object'}
+typeSubs = {
+    'char': 'chr',
+    'DataInputStream': 'object',
+    'EClientSocket': 'object',
+}
+
+def expressionCastHandler(expr, node):
+    name = node.firstChildOfType(tokens.TYPE).firstChild()
+    if name.type == tokens.QUALIFIED_TYPE_IDENT:
+        name = name.firstChild()
+    name = name.text
+    if name == 'chr':
+        expr.fs = name + '(' + FS.r + ')'
+    else:
+        expr.fs = FS.r

@@ -1,4 +1,6 @@
+import socket
 import sys
+import threading
 
 
 class Boolean(object):
@@ -11,6 +13,7 @@ class Double(object):
 
 class Integer(object):
     MAX_VALUE = sys.maxsize
+    parseInt = int
 
 
 class Long(object):
@@ -30,19 +33,35 @@ class DateFormat(object):
 
 
 class DataInputStream(object):
-    pass
+    def __init__(self, in_):
+        self.in_ = in_
+
+    def readByte(self):
+        return ord(self.in_.recv(1))
+
+    def close(self):
+        pass
 
 
 class DataOutputStream(object):
-    pass
+    def __init__(self, out):
+        self.out = out
+
+    def write(self, b):
+        self.out.send(b)
 
 
-class Socket(object):
-    pass
+class Socket(socket.socket):
+    def __init__(self, host, port):
+        socket.socket.__init__(self, socket.AF_INET, socket.SOCK_STREAM)
+        self.connect((host, port))
+
+    getInputStream = getOutputStream = lambda self: self
 
 
-class StringBuffer(object):
-    pass
+class StringBuffer(list):
+    def __str__(self):
+        return ''.join(self)
 
 
 class StringBuilder(list):
@@ -58,5 +77,9 @@ class Vector(list):
     get = list.__getitem__
 
 
-class Thread(object):
-    pass
+class Thread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.daemon = True
+
+    isInterrupted = lambda self: False

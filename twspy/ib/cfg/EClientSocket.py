@@ -1,5 +1,5 @@
 modulePrologueHandlers = [
-    'from ..lang.python import overloaded',
+    'from ..lang.python import long, overloaded',
     'from ..lang.java import DataInputStream, DataOutputStream, Double, Integer, Socket',
     'from .Builder import Builder',
     'from .EClientErrors import EClientErrors',
@@ -21,4 +21,12 @@ moduleOutputSubs = [
         'sendEOL',
         'sendMax',
     ]
+] + [
+    (r'EOL = \[0\]', r'EOL = chr(0).encode()'),
+    (r'str_\.getBytes\(\)', r'str_.encode()'),
+
+    (r'print\("Server Version:" \+ self\.m_serverVersion\)',
+     r'print("Server Version:" + str(self.m_serverVersion))',),
 ]
+
+typeSubs = {'char': 'chr'}

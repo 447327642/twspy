@@ -58,5 +58,7 @@ def test_client():
     con.reqExecutions(1, ExecutionFilter)
     assert sleep_until(lambda: 'execDetailsEnd' in seen, 1.0)
 
+    reader = con.reader()
     con.eDisconnect()
     assert not con.isConnected()
+    assert sleep_until(lambda: not reader.is_alive(), 1.0)

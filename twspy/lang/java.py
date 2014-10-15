@@ -53,6 +53,10 @@ class DataOutputStream(object):
     def write(self, b):
         self.out.send(b)
 
+    def close(self):
+        self.out.shutdown(socket.SHUT_RDWR)
+        self.out.close()
+
 
 class Socket(socket.socket):
     def __init__(self, host, port):

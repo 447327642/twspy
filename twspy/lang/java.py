@@ -53,8 +53,9 @@ class StringBuilder(list):
         return ''.join(self)
 
 
-class Vector(object):
-    pass
+class Vector(list):
+    add = list.append
+    get = list.__getitem__
 
 
 class Thread(object):

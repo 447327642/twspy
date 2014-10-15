@@ -1,5 +1,6 @@
 """ generated source for module Util """
 from __future__ import print_function
+from ..lang.python import cmp
 from ..lang.java import Double, Integer
 #  Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
 #  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. 
@@ -19,12 +20,12 @@ class Util(object):
     @classmethod
     def StringCompare(cls, lhs, rhs):
         """ generated source for method StringCompare """
-        return cls.NormalizeString(lhs).compareTo(cls.NormalizeString(rhs))
+        return cmp(str(lhs), str(rhs))
 
     @classmethod
     def StringCompareIgnCase(cls, lhs, rhs):
         """ generated source for method StringCompareIgnCase """
-        return cls.NormalizeString(lhs).compareToIgnoreCase(cls.NormalizeString(rhs))
+        return cmp(str(lhs).lower(), str(rhs).lower())
 
     @classmethod
     def VectorEqualsUnordered(cls, lhs, rhs):
@@ -59,10 +60,10 @@ class Util(object):
     @classmethod
     def IntMaxString(cls, value):
         """ generated source for method IntMaxString """
-        return "" if (value == Integer.MAX_VALUE) else "" + value
+        return "" if (value == Integer.MAX_VALUE) else str(value)
 
     @classmethod
     def DoubleMaxString(cls, value):
         """ generated source for method DoubleMaxString """
-        return "" if (value == Double.MAX_VALUE) else "" + value
+        return "" if (value == Double.MAX_VALUE) else str(value)
 

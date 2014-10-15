@@ -1,13 +1,16 @@
+import sys
+
+
 class Boolean(object):
     pass
 
 
 class Double(object):
-    pass
+    MAX_VALUE = sys.float_info.max
 
 
 class Integer(object):
-    pass
+    MAX_VALUE = sys.maxsize
 
 
 class Long(object):
@@ -42,8 +45,12 @@ class StringBuffer(object):
     pass
 
 
-class StringBuilder(object):
-    pass
+class StringBuilder(list):
+    def __init__(self, capacity):
+        pass
+
+    def __str__(self):
+        return ''.join(self)
 
 
 class Vector(object):

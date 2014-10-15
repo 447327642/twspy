@@ -10,7 +10,7 @@ from .IApiEnum import IApiEnum
 #  *  sent to the socket in a single write. 
 class Builder(object):
     """ generated source for class Builder """
-    SEP = 0
+    SEP = chr(0)
     m_sb = StringBuilder(4096)
 
     @overloaded
@@ -46,5 +46,5 @@ class Builder(object):
 
     def getBytes(self):
         """ generated source for method getBytes """
-        return self.m_sb.__str__().getBytes()
+        return self.m_sb.__str__().encode()
 

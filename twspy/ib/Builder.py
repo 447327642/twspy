@@ -36,7 +36,7 @@ class Builder(object):
     @send.register(object, str)
     def send_3(self, a):
         """ generated source for method send_3 """
-        if a != None:
+        if a is not None:
             self.m_sb.append(a)
         self.m_sb.append(self.SEP)
 

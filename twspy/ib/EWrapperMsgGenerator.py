@@ -55,10 +55,10 @@ class EWrapperMsgGenerator(AnyWrapperMsgGenerator):
         """ generated source for method openOrder """
         msg = "open order: orderId=" + orderId + " action=" + order.m_action + " quantity=" + order.m_totalQuantity + " conid=" + contract.m_conId + " symbol=" + contract.m_symbol + " secType=" + contract.m_secType + " expiry=" + contract.m_expiry + " strike=" + contract.m_strike + " right=" + contract.m_right + " multiplier=" + contract.m_multiplier + " exchange=" + contract.m_exchange + " primaryExch=" + contract.m_primaryExch + " currency=" + contract.m_currency + " localSymbol=" + contract.m_localSymbol + " tradingClass=" + contract.m_tradingClass + " type=" + order.m_orderType + " lmtPrice=" + Util.DoubleMaxString(order.m_lmtPrice) + " auxPrice=" + Util.DoubleMaxString(order.m_auxPrice) + " TIF=" + order.m_tif + " localSymbol=" + contract.m_localSymbol + " client Id=" + order.m_clientId + " parent Id=" + order.m_parentId + " permId=" + order.m_permId + " outsideRth=" + order.m_outsideRth + " hidden=" + order.m_hidden + " discretionaryAmt=" + order.m_discretionaryAmt + " displaySize=" + order.m_displaySize + " triggerMethod=" + order.m_triggerMethod + " goodAfterTime=" + order.m_goodAfterTime + " goodTillDate=" + order.m_goodTillDate + " faGroup=" + order.m_faGroup + " faMethod=" + order.m_faMethod + " faPercentage=" + order.m_faPercentage + " faProfile=" + order.m_faProfile + " shortSaleSlot=" + order.m_shortSaleSlot + " designatedLocation=" + order.m_designatedLocation + " exemptCode=" + order.m_exemptCode + " ocaGroup=" + order.m_ocaGroup + " ocaType=" + order.m_ocaType + " rule80A=" + order.m_rule80A + " allOrNone=" + order.m_allOrNone + " minQty=" + Util.IntMaxString(order.m_minQty) + " percentOffset=" + Util.DoubleMaxString(order.m_percentOffset) + " eTradeOnly=" + order.m_eTradeOnly + " firmQuoteOnly=" + order.m_firmQuoteOnly + " nbboPriceCap=" + Util.DoubleMaxString(order.m_nbboPriceCap) + " optOutSmartRouting=" + order.m_optOutSmartRouting + " auctionStrategy=" + order.m_auctionStrategy + " startingPrice=" + Util.DoubleMaxString(order.m_startingPrice) + " stockRefPrice=" + Util.DoubleMaxString(order.m_stockRefPrice) + " delta=" + Util.DoubleMaxString(order.m_delta) + " stockRangeLower=" + Util.DoubleMaxString(order.m_stockRangeLower) + " stockRangeUpper=" + Util.DoubleMaxString(order.m_stockRangeUpper) + " volatility=" + Util.DoubleMaxString(order.m_volatility) + " volatilityType=" + order.m_volatilityType + " deltaNeutralOrderType=" + order.m_deltaNeutralOrderType + " deltaNeutralAuxPrice=" + Util.DoubleMaxString(order.m_deltaNeutralAuxPrice) + " deltaNeutralConId=" + order.m_deltaNeutralConId + " deltaNeutralSettlingFirm=" + order.m_deltaNeutralSettlingFirm + " deltaNeutralClearingAccount=" + order.m_deltaNeutralClearingAccount + " deltaNeutralClearingIntent=" + order.m_deltaNeutralClearingIntent + " deltaNeutralOpenClose=" + order.m_deltaNeutralOpenClose + " deltaNeutralShortSale=" + order.m_deltaNeutralShortSale + " deltaNeutralShortSaleSlot=" + order.m_deltaNeutralShortSaleSlot + " deltaNeutralDesignatedLocation=" + order.m_deltaNeutralDesignatedLocation + " continuousUpdate=" + order.m_continuousUpdate + " referencePriceType=" + order.m_referencePriceType + " trailStopPrice=" + Util.DoubleMaxString(order.m_trailStopPrice) + " trailingPercent=" + Util.DoubleMaxString(order.m_trailingPercent) + " scaleInitLevelSize=" + Util.IntMaxString(order.m_scaleInitLevelSize) + " scaleSubsLevelSize=" + Util.IntMaxString(order.m_scaleSubsLevelSize) + " scalePriceIncrement=" + Util.DoubleMaxString(order.m_scalePriceIncrement) + " scalePriceAdjustValue=" + Util.DoubleMaxString(order.m_scalePriceAdjustValue) + " scalePriceAdjustInterval=" + Util.IntMaxString(order.m_scalePriceAdjustInterval) + " scaleProfitOffset=" + Util.DoubleMaxString(order.m_scaleProfitOffset) + " scaleAutoReset=" + order.m_scaleAutoReset + " scaleInitPosition=" + Util.IntMaxString(order.m_scaleInitPosition) + " scaleInitFillQty=" + Util.IntMaxString(order.m_scaleInitFillQty) + " scaleRandomPercent=" + order.m_scaleRandomPercent + " hedgeType=" + order.m_hedgeType + " hedgeParam=" + order.m_hedgeParam + " account=" + order.m_account + " settlingFirm=" + order.m_settlingFirm + " clearingAccount=" + order.m_clearingAccount + " clearingIntent=" + order.m_clearingIntent + " notHeld=" + order.m_notHeld + " whatIf=" + order.m_whatIf
         if "BAG" == contract.m_secType:
-            if contract.m_comboLegsDescrip != None:
+            if contract.m_comboLegsDescrip is not None:
                 msg += " comboLegsDescrip=" + contract.m_comboLegsDescrip
             msg += " comboLegs={"
-            if contract.m_comboLegs != None:
+            if contract.m_comboLegs is not None:
                 i = 0
                 while i < len(contract.m_comboLegs):
                     comboLeg = contract.m_comboLegs.get(i)
@@ -71,7 +71,7 @@ class EWrapperMsgGenerator(AnyWrapperMsgGenerator):
                     msg += " shortSaleSlot=" + comboLeg.m_shortSaleSlot
                     msg += " designatedLocation=" + comboLeg.m_designatedLocation
                     msg += " exemptCode=" + comboLeg.m_exemptCode
-                    if order.m_orderComboLegs != None and len(contract.m_comboLegs) == len(order.m_orderComboLegs):
+                    if order.m_orderComboLegs is not None and len(contract.m_comboLegs) == len(order.m_orderComboLegs):
                         orderComboLeg = order.m_orderComboLegs.get(i)
                         msg += " price=" + Util.DoubleMaxString(orderComboLeg.m_price)
                     msg += ";"
@@ -80,13 +80,13 @@ class EWrapperMsgGenerator(AnyWrapperMsgGenerator):
             if order.m_basisPoints != Double.MAX_VALUE:
                 msg += " basisPoints=" + Util.DoubleMaxString(order.m_basisPoints)
                 msg += " basisPointsType=" + Util.IntMaxString(order.m_basisPointsType)
-        if contract.m_underComp != None:
+        if contract.m_underComp is not None:
             underComp = contract.m_underComp
             msg += " underComp.conId =" + underComp.m_conId + " underComp.delta =" + underComp.m_delta + " underComp.price =" + underComp.m_price
         if not Util.StringIsEmpty(order.m_algoStrategy):
             msg += " algoStrategy=" + order.m_algoStrategy
             msg += " algoParams={"
-            if order.m_algoParams != None:
+            if order.m_algoParams is not None:
                 algoParams = order.m_algoParams
                 i = 0
                 while i < len(algoParams):
@@ -98,7 +98,7 @@ class EWrapperMsgGenerator(AnyWrapperMsgGenerator):
             msg += "}"
         if "BAG" == contract.m_secType:
             msg += " smartComboRoutingParams={"
-            if order.m_smartComboRoutingParams != None:
+            if order.m_smartComboRoutingParams is not None:
                 smartComboRoutingParams = order.m_smartComboRoutingParams
                 i = 0
                 while i < len(smartComboRoutingParams):
@@ -172,7 +172,7 @@ class EWrapperMsgGenerator(AnyWrapperMsgGenerator):
     def contractDetailsSecIdList(cls, contractDetails):
         """ generated source for method contractDetailsSecIdList """
         msg = "secIdList={"
-        if contractDetails.m_secIdList != None:
+        if contractDetails.m_secIdList is not None:
             secIdList = contractDetails.m_secIdList
             i = 0
             while i < len(secIdList):

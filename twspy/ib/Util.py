@@ -10,12 +10,12 @@ class Util(object):
     @classmethod
     def StringIsEmpty(cls, str_):
         """ generated source for method StringIsEmpty """
-        return str_ == None or 0 == len(str_)
+        return str_ is None or 0 == len(str_)
 
     @classmethod
     def NormalizeString(cls, str_):
         """ generated source for method NormalizeString """
-        return str_ if str_ != None else ""
+        return str_ if str_ is not None else ""
 
     @classmethod
     def StringCompare(cls, lhs, rhs):
@@ -32,8 +32,8 @@ class Util(object):
         """ generated source for method VectorEqualsUnordered """
         if lhs == rhs:
             return True
-        lhsCount = 0 if lhs == None else len(lhs)
-        rhsCount = 0 if rhs == None else len(rhs)
+        lhsCount = 0 if lhs is None else len(lhs)
+        rhsCount = 0 if rhs is None else len(rhs)
         if lhsCount != rhsCount:
             return False
         if lhsCount == 0:

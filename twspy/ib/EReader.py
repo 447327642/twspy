@@ -896,30 +896,30 @@ class EReader(Thread):
     def readBoolFromInt(self):
         """ generated source for method readBoolFromInt """
         str_ = self.readStr()
-        return False if str_ == None else (Integer.parseInt(str_) != 0)
+        return False if str_ is None else (Integer.parseInt(str_) != 0)
 
     def readInt(self):
         """ generated source for method readInt """
         str_ = self.readStr()
-        return 0 if str_ == None else Integer.parseInt(str_)
+        return 0 if str_ is None else Integer.parseInt(str_)
 
     def readIntMax(self):
         """ generated source for method readIntMax """
         str_ = self.readStr()
-        return Integer.MAX_VALUE if (str_ == None or 0 == len(str_)) else Integer.parseInt(str_)
+        return Integer.MAX_VALUE if (str_ is None or 0 == len(str_)) else Integer.parseInt(str_)
 
     def readLong(self):
         """ generated source for method readLong """
         str_ = self.readStr()
-        return 0 if str_ == None else Long.parseLong(str_)
+        return 0 if str_ is None else Long.parseLong(str_)
 
     def readDouble(self):
         """ generated source for method readDouble """
         str_ = self.readStr()
-        return 0 if str_ == None else Double.parseDouble(str_)
+        return 0 if str_ is None else Double.parseDouble(str_)
 
     def readDoubleMax(self):
         """ generated source for method readDoubleMax """
         str_ = self.readStr()
-        return Double.MAX_VALUE if (str_ == None or 0 == len(str_)) else Double.parseDouble(str_)
+        return Double.MAX_VALUE if (str_ is None or 0 == len(str_)) else Double.parseDouble(str_)
 

@@ -247,7 +247,7 @@ class EClientSocket(object):
         """ generated source for method eConnect """
         #  already connected?
         host = self.checkConnected(host)
-        if host == None:
+        if host is None:
             return
         try:
             socket = Socket(host, port)
@@ -305,7 +305,7 @@ class EClientSocket(object):
     def eDisconnect(self):
         """ generated source for method eDisconnect """
         #  not connected?
-        if self.m_dos == None:
+        if self.m_dos is None:
             return
         self.m_connected = False
         self.m_serverVersion = 0
@@ -316,13 +316,13 @@ class EClientSocket(object):
         self.m_reader = None
         try:
             #  stop reader thread; reader thread will close input stream
-            if reader != None:
+            if reader is not None:
                 reader.interrupt()
         except Exception as e:
             pass
         try:
             #  close output stream
-            if dos != None:
+            if dos is not None:
                 dos.close()
         except Exception as e:
             pass
@@ -417,7 +417,7 @@ class EClientSocket(object):
             self.error(tickerId, EClientErrors.UPDATE_TWS, "  It does not support snapshot market data requests.")
             return
         if self.m_serverVersion < self.MIN_SERVER_VER_UNDER_COMP:
-            if contract.m_underComp != None:
+            if contract.m_underComp is not None:
                 self.error(tickerId, EClientErrors.UPDATE_TWS, "  It does not support delta-neutral orders.")
                 return
         if self.m_serverVersion < self.MIN_SERVER_VER_REQ_MKT_DATA_CONID:
@@ -453,7 +453,7 @@ class EClientSocket(object):
             if self.m_serverVersion >= self.MIN_SERVER_VER_TRADING_CLASS:
                 self.send(contract.m_tradingClass)
             if self.m_serverVersion >= 8 and self.BAG_SEC_TYPE.lower() == contract.m_secType.lower():
-                if contract.m_comboLegs == None:
+                if contract.m_comboLegs is None:
                     self.send(0)
                 else:
                     self.send(len(contract.m_comboLegs))
@@ -467,7 +467,7 @@ class EClientSocket(object):
                         self.send(comboLeg.m_exchange)
                         i += 1
             if self.m_serverVersion >= self.MIN_SERVER_VER_UNDER_COMP:
-                if contract.m_underComp != None:
+                if contract.m_underComp is not None:
                     underComp = contract.m_underComp
                     self.send(True)
                     self.send(underComp.m_conId)
@@ -575,7 +575,7 @@ class EClientSocket(object):
             if self.m_serverVersion > 16:
                 self.send(formatDate)
             if self.BAG_SEC_TYPE.lower() == contract.m_secType.lower():
-                if contract.m_comboLegs == None:
+                if contract.m_comboLegs is None:
                     self.send(0)
                 else:
                     self.send(len(contract.m_comboLegs))
@@ -832,7 +832,7 @@ class EClientSocket(object):
                 self.error(id, EClientErrors.UPDATE_TWS, "  It does not support what-if orders.")
                 return
         if self.m_serverVersion < self.MIN_SERVER_VER_UNDER_COMP:
-            if contract.m_underComp != None:
+            if contract.m_underComp is not None:
                 self.error(id, EClientErrors.UPDATE_TWS, "  It does not support delta-neutral orders.")
                 return
         if self.m_serverVersion < self.MIN_SERVER_VER_SCALE_ORDERS2:
@@ -975,7 +975,7 @@ class EClientSocket(object):
                 self.send(order.m_hidden)
             #  Send combo legs for BAG requests
             if self.m_serverVersion >= 8 and self.BAG_SEC_TYPE.lower() == contract.m_secType.lower():
-                if contract.m_comboLegs == None:
+                if contract.m_comboLegs is None:
                     self.send(0)
                 else:
                     self.send(len(contract.m_comboLegs))
@@ -996,7 +996,7 @@ class EClientSocket(object):
                         i += 1
             #  Send order combo legs for BAG requests
             if self.m_serverVersion >= self.MIN_SERVER_VER_ORDER_COMBO_LEGS_PRICE and self.BAG_SEC_TYPE.lower() == contract.m_secType.lower():
-                if order.m_orderComboLegs == None:
+                if order.m_orderComboLegs is None:
                     self.send(0)
                 else:
                     self.send(len(order.m_orderComboLegs))
@@ -1007,7 +1007,7 @@ class EClientSocket(object):
                         i += 1
             if self.m_serverVersion >= self.MIN_SERVER_VER_SMART_COMBO_ROUTING_PARAMS and self.BAG_SEC_TYPE.lower() == contract.m_secType.lower():
                 smartComboRoutingParams = order.m_smartComboRoutingParams
-                smartComboRoutingParamsCount = 0 if smartComboRoutingParams == None else len(smartComboRoutingParams)
+                smartComboRoutingParamsCount = 0 if smartComboRoutingParams is None else len(smartComboRoutingParams)
                 self.send(smartComboRoutingParamsCount)
                 if smartComboRoutingParamsCount > 0:
                     i = 0
@@ -1126,7 +1126,7 @@ class EClientSocket(object):
             if self.m_serverVersion >= self.MIN_SERVER_VER_NOT_HELD:
                 self.send(order.m_notHeld)
             if self.m_serverVersion >= self.MIN_SERVER_VER_UNDER_COMP:
-                if contract.m_underComp != None:
+                if contract.m_underComp is not None:
                     underComp = contract.m_underComp
                     self.send(True)
                     self.send(underComp.m_conId)
@@ -1138,7 +1138,7 @@ class EClientSocket(object):
                 self.send(order.m_algoStrategy)
                 if not self.IsEmpty(order.m_algoStrategy):
                     algoParams = order.m_algoParams
-                    algoParamsCount = 0 if algoParams == None else len(algoParams)
+                    algoParamsCount = 0 if algoParams is None else len(algoParams)
                     self.send(algoParamsCount)
                     if algoParamsCount > 0:
                         i = 0
@@ -1723,7 +1723,7 @@ class EClientSocket(object):
     def is_(cls, str_):
         """ generated source for method is_ """
         #  return true if the string is not empty
-        return str_ != None and 0 > len(str_)
+        return str_ is not None and 0 > len(str_)
 
     @classmethod
     def isNull(cls, str_):

@@ -20,11 +20,11 @@ class TagValue(object):
         self.m_tag = p_tag
         self.m_value = p_value
 
-    def equals(self, p_other):
+    def __eq__(self, p_other):
         """ generated source for method equals """
-        if self == p_other:
+        if self is p_other:
             return True
-        if p_other == None:
+        if p_other is None:
             return False
         l_theOther = p_other
         if Util.StringCompare(self.m_tag, l_theOther.m_tag) != 0 or Util.StringCompare(self.m_value, l_theOther.m_value) != 0:

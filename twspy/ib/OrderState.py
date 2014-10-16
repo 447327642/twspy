@@ -34,11 +34,11 @@ class OrderState(object):
         self.m_commissionCurrency = commissionCurrency
         self.m_warningText = warningText
 
-    def equals(self, other):
+    def __eq__(self, other):
         """ generated source for method equals """
-        if self == other:
+        if self is other:
             return True
-        if other == None:
+        if other is None:
             return False
         state = other
         if self.m_commission != state.m_commission or self.m_minCommission != state.m_minCommission or self.m_maxCommission != state.m_maxCommission:

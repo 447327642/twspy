@@ -9,7 +9,11 @@ def test_builder():
 
 def test_order_state():
     from twspy.ib.OrderState import OrderState
-    assert OrderState()
+    o1 = OrderState()
+    o2 = OrderState()
+    assert o1 == o2
+    o2.m_commission = 0.5
+    assert o1 != o2
 
 class TestUtil:
     def test_string_compare(self):

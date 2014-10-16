@@ -74,11 +74,11 @@ class Contract(Cloneable):
         self.m_secIdType = p_secIdType
         self.m_secId = p_secId
 
-    def equals(self, p_other):
+    def __eq__(self, p_other):
         """ generated source for method equals """
-        if self == p_other:
+        if self is p_other:
             return True
-        if p_other == None or not (isinstance(p_other, (Contract, ))):
+        if p_other is None or not (isinstance(p_other, (Contract, ))):
             return False
         l_theOther = p_other
         if self.m_conId != l_theOther.m_conId:
@@ -100,7 +100,7 @@ class Contract(Cloneable):
         if not Util.VectorEqualsUnordered(self.m_comboLegs, l_theOther.m_comboLegs):
             return False
         if self.m_underComp != l_theOther.m_underComp:
-            if self.m_underComp == None or l_theOther.m_underComp == None:
+            if self.m_underComp is None or l_theOther.m_underComp is None:
                 return False
             if not self.m_underComp == l_theOther.m_underComp:
                 return False

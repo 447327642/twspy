@@ -20,12 +20,12 @@ class CommissionReport(object):
         self.m_yield = 0
         self.m_yieldRedemptionDate = 0
 
-    def equals(self, p_other):
+    def __eq__(self, p_other):
         """ generated source for method equals """
         l_bRetVal = False
-        if p_other == None:
+        if p_other is None:
             l_bRetVal = False
-        elif self == p_other:
+        elif self is p_other:
             l_bRetVal = True
         else:
             l_theOther = p_other

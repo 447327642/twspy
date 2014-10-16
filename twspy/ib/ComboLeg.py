@@ -55,11 +55,11 @@ class ComboLeg(object):
         self.m_designatedLocation = p_designatedLocation
         self.m_exemptCode = p_exemptCode
 
-    def equals(self, p_other):
+    def __eq__(self, p_other):
         """ generated source for method equals """
-        if self == p_other:
+        if self is p_other:
             return True
-        elif p_other == None:
+        elif p_other is None:
             return False
         l_theOther = p_other
         if self.m_conId != l_theOther.m_conId or self.m_ratio != l_theOther.m_ratio or self.m_openClose != l_theOther.m_openClose or self.m_shortSaleSlot != l_theOther.m_shortSaleSlot or self.m_exemptCode != l_theOther.m_exemptCode:

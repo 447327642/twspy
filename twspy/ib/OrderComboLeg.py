@@ -20,11 +20,11 @@ class OrderComboLeg(object):
         """ generated source for method __init___0 """
         self.m_price = p_price
 
-    def equals(self, p_other):
+    def __eq__(self, p_other):
         """ generated source for method equals """
-        if self == p_other:
+        if self is p_other:
             return True
-        elif p_other == None:
+        elif p_other is None:
             return False
         l_theOther = p_other
         if self.m_price != l_theOther.m_price:

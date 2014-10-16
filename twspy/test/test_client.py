@@ -1,18 +1,13 @@
 from __future__ import print_function
 import collections
 import inspect
-import os
 import sys
 
 from twspy.ib.EClientSocket import EClientSocket
 from twspy.ib.EWrapper import EWrapper
 from twspy.ib.ExecutionFilter import ExecutionFilter
 
-from .support import sleep_until
-
-TWS_HOST = os.environ.get('TWS_HOST', '127.0.0.1')
-TWS_PORT = int(os.environ.get('TWS_PORT', 7496))
-TWS_CLID = int(os.environ.get('TWS_CLID', 0))
+from .support import config, sleep_until
 
 def test_client():
     functions = {}
@@ -36,7 +31,7 @@ def test_client():
             locals()[name] = make(name, spec)
 
     con = EClientSocket(MyWrapper())
-    con.eConnect(TWS_HOST, TWS_PORT, TWS_CLID)
+    con.eConnect(*config)
     assert con.isConnected()
     assert sleep_until(lambda: 'nextValidId' in seen, 1.0)
     assert seen['nextValidId']['orderId'] > 0

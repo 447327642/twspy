@@ -1,14 +1,8 @@
-import os
-
 import pytest
 
 from twspy import Connection, message
 
-from .support import sleep_until
-
-TWS_HOST = os.environ.get('TWS_HOST', '127.0.0.1')
-TWS_PORT = int(os.environ.get('TWS_PORT', 7496))
-TWS_CLID = int(os.environ.get('TWS_CLID', 0))
+from .support import config, sleep_until
 
 def test_constructor():
     assert Connection() is not None
@@ -32,7 +26,7 @@ def test_basic(capsys):
     def callback(msg):
         seen[type(msg).__name__] = msg
 
-    con = Connection(TWS_HOST, TWS_PORT, TWS_CLID)
+    con = Connection(*config)
     assert con.registerAll(callback)
     assert con.enableLogging()
 

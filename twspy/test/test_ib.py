@@ -7,6 +7,10 @@ def test_builder():
     b.send(True)
     assert b.getBytes() == b"42\x00test\x00-0.5\x001\x00"
 
+def test_order_state():
+    from twspy.ib.OrderState import OrderState
+    assert OrderState()
+
 class TestUtil:
     def test_string_compare(self):
         from twspy.ib.Util import Util

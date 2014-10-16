@@ -40,7 +40,7 @@ class overloaded:
 
     def __init__(self, default_func):
         # Decorator to declare new overloaded function.
-        self.registry = {}
+        self.registry = {(object,) * default_func.__code__.co_argcount: default_func}
         self.cache = {}
         self.default_func = default_func
 
@@ -93,7 +93,8 @@ class overloaded:
         n = len(mros)
         candidates = [sig for sig in self.registry
                       if len(sig) == n and
-                         all(t in mro for t, mro in zip(sig, mros))]
+                         all(mro[0] is type(None) or
+                             t in mro for t, mro in zip(sig, mros))]
         if not candidates:
             # No match at all -- use the default function.
             return self.default_func
@@ -117,8 +118,12 @@ class overloaded:
             # (s1, s2, ...) iff d1 dominates s1, d2 dominates s2, etc.
             if dom is sub:
                 return False
-            return all(order[d] <= order[s]
-                       for d, s, order in zip(dom, sub, orders))
+            for d, s, order in zip(dom, sub, orders):
+                if s not in order:
+                    continue
+                if not (d in order and order[d] <= order[s]):
+                    return False
+            return True
 
         # I suppose I could inline dominates() but it wouldn't get any clearer.
         candidates = [cand

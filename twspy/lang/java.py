@@ -6,7 +6,15 @@ from .python import long
 
 
 class Boolean(object):
-    pass
+    def __init__(self, value):
+        self.value = value
+
+    def booleanValue(self):
+        return self.value
+
+    @classmethod
+    def valueOf(cls, s):
+        return cls(s.lower() == 'true')
 
 
 class Double(object):

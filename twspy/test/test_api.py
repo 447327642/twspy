@@ -61,3 +61,28 @@ def test_exception_in_handler():
     assert not con.isConnected()
     assert not con.disconnect()
     assert con.unregister(callback, 'nextValidId')
+
+def test_historical_data():
+    import time
+    from twspy.ib.Contract import Contract
+
+    seen = []
+    def callback(msg):
+        if msg.date.startswith('finished'):
+            seen.append(True)
+
+    con = Connection(*config)
+    assert con.register(callback, 'historicalData')
+    con.enableLogging()
+    assert con.connect()
+
+    c = Contract()
+    c.m_symbol = 'AAPL'
+    c.m_secType = 'STK'
+    c.m_exchange = 'SMART'
+    c.m_primaryExch = 'NYSE'
+    e = time.strftime('%Y%m%d %H:%M:%S')
+    con.reqHistoricalData(1, c, e, "5 D", "1 hour", "TRADES", 1, 1)
+
+    assert sleep_until(lambda: seen, 1.0)
+    assert con.disconnect()

@@ -31,6 +31,9 @@ class Dispatcher(EWrapper):
     for name, value in messages.items():
         locals()[name] = make(name, value._fields)
 
+    def error(self, *args):
+        self.dispatch('error', (None,) * (3 - len(args)) + args)
+
 
 class Connection(object):
     def __init__(self, host='localhost', port=7496, clientId=0):

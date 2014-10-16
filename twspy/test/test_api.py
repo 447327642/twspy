@@ -45,3 +45,18 @@ def test_basic(capsys):
 
     out, err = capsys.readouterr()
     assert 'currentTime' in err
+
+def test_exception_in_handler():
+    seen = []
+    def callback(msg):
+        seen.append(True)
+        raise Exception('test')
+
+    con = Connection(*config)
+    assert con.register(callback, 'nextValidId')
+
+    assert con.connect()
+    assert sleep_until(lambda: seen, 1.0)
+    assert not con.isConnected()
+    assert not con.disconnect()
+    assert con.unregister(callback, 'nextValidId')

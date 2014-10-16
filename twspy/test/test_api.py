@@ -15,14 +15,11 @@ def test_constructor():
     assert Connection() is not None
     assert Connection(clientId=0) is not None
     assert Connection(host='test', port=12345, clientId=0) is not None
-    from twspy import ibConnection
-    assert ibConnection(host='test', port=12345, clientId=0) is not None
 
 def test_register():
     def callback(msg): pass
     con = Connection()
-    for arg in [message.nextValidId, 'nextValidId',
-                message.NextValidId, 'NextValidId']:
+    for arg in [message.nextValidId, 'nextValidId']:
         assert not con.unregister(callback, arg)
         assert con.register(callback, arg)
         assert not con.register(callback, arg)
@@ -30,7 +27,7 @@ def test_register():
         assert con.unregister(callback, arg)
         assert not con.unregister(callback, arg)
     with pytest.raises(ValueError):
-        con.register(callback, 'NEXTVALIDID')
+        con.register(callback, 'NextValidId')
 
 def test_attributes_before_connect():
     con = Connection()

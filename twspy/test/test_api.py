@@ -27,13 +27,14 @@ def test_register():
     with pytest.raises(AssertionError):
         con.register(callback, 'NextValidId')
 
-def test_basic():
+def test_basic(capsys):
     seen = {}
     def callback(msg):
         seen[type(msg).__name__] = msg
 
     con = Connection(TWS_HOST, TWS_PORT, TWS_CLID)
     assert con.registerAll(callback)
+    assert con.enableLogging()
 
     assert not con.disconnect()
     assert con.connect()
@@ -46,3 +47,7 @@ def test_basic():
 
     assert con.disconnect()
     assert not con.disconnect()
+    assert not con.enableLogging(False)
+
+    out, err = capsys.readouterr()
+    assert 'currentTime' in err

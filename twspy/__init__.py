@@ -1,3 +1,4 @@
+from __future__ import print_function
 from collections import namedtuple
 import inspect
 import sys
@@ -93,6 +94,17 @@ class Connection(object):
 
     def unregisterAll(self, listener):
         return self.unregister(listener, *messages.keys())
+
+    def enableLogging(self, enable=True):
+        if enable:
+            self.registerAll(self.logMessage)
+        else:
+            self.unregisterAll(self.logMessage)
+        return enable
+
+    @staticmethod
+    def logMessage(msg):
+        print(msg, file=sys.stderr)
 
     def __getattr__(self, name):
         return getattr(self.client, name)

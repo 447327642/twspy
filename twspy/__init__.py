@@ -62,6 +62,14 @@ class Connection(object):
         for listener in listeners:
             listener(msg)
 
+    def getListeners(self, arg):
+        if not isinstance(arg, str):
+            name = arg.__name__
+        else:
+            name = arg
+        assert name in messages
+        return self.listeners.get(name, [])
+
     def register(self, listener, *args):
         count = 0
         for arg in args:

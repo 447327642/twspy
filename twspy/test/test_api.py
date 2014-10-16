@@ -16,6 +16,7 @@ def test_register():
         assert not con.unregister(callback, arg)
         assert con.register(callback, arg)
         assert not con.register(callback, arg)
+        assert callback in con.getListeners(arg)
         assert con.unregister(callback, arg)
         assert not con.unregister(callback, arg)
     with pytest.raises(AssertionError):

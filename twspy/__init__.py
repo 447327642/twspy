@@ -62,22 +62,23 @@ class Connection(object):
         for listener in listeners:
             listener(msg)
 
-    def getListeners(self, arg):
+    @staticmethod
+    def getName(arg):
         if not isinstance(arg, str):
             name = arg.__name__
         else:
             name = arg
         assert name in messages
+        return name
+
+    def getListeners(self, arg):
+        name = self.getName(arg)
         return self.listeners.get(name, [])
 
     def register(self, listener, *args):
         count = 0
         for arg in args:
-            if not isinstance(arg, str):
-                name = arg.__name__
-            else:
-                name = arg
-            assert name in messages
+            name = self.getName(arg)
             listeners = self.listeners.setdefault(name, [])
             if listener not in listeners:
                 listeners.append(listener)
@@ -87,11 +88,7 @@ class Connection(object):
     def unregister(self, listener, *args):
         count = 0
         for arg in args:
-            if not isinstance(arg, str):
-                name = arg.__name__
-            else:
-                name = arg
-            assert name in messages
+            name = self.getName(arg)
             try:
                 self.listeners[name].remove(listener)
             except (KeyError, ValueError):

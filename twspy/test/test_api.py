@@ -4,6 +4,13 @@ from twspy import Connection, message
 
 from .support import config, sleep_until
 
+@pytest.fixture
+def con(request):
+    con = Connection(*config)
+    con.enableLogging()
+    request.addfinalizer(lambda: con.disconnect())
+    return con
+
 def test_constructor():
     assert Connection() is not None
     assert Connection(clientId=0) is not None
@@ -26,14 +33,12 @@ def test_attributes_before_connect():
     con = Connection()
     assert not con.isConnected()
 
-def test_basic(capsys):
+def test_basic(con, capsys):
     seen = {}
     def callback(msg):
         seen[type(msg).__name__] = msg
 
-    con = Connection(*config)
     assert con.registerAll(callback)
-    assert con.enableLogging()
 
     assert not con.disconnect()
     assert con.connect()
@@ -51,11 +56,9 @@ def test_basic(capsys):
     out, err = capsys.readouterr()
     assert 'currentTime' in err
 
-def test_connect_multiple():
+def test_connect_multiple(con):
     def callback(msg):
         seen.append(True)
-    con = Connection(*config)
-    con.enableLogging()
     assert con.register(callback, 'nextValidId')
     for i in range(2):
         seen = []
@@ -65,13 +68,12 @@ def test_connect_multiple():
         assert con.disconnect()
         assert not con.isConnected()
 
-def test_exception_in_handler():
+def test_exception_in_handler(con):
     seen = []
     def callback(msg):
         seen.append(True)
         raise Exception('test')
 
-    con = Connection(*config)
     assert con.register(callback, 'nextValidId')
 
     assert con.connect()
@@ -80,7 +82,7 @@ def test_exception_in_handler():
     assert not con.disconnect()
     assert con.unregister(callback, 'nextValidId')
 
-def test_historical_data():
+def test_historical_data(con):
     import time
     from twspy.ib.Contract import Contract
 
@@ -89,9 +91,7 @@ def test_historical_data():
         if msg.date.startswith('finished'):
             seen.append(True)
 
-    con = Connection(*config)
     assert con.register(callback, 'historicalData')
-    con.enableLogging()
     assert con.connect()
 
     c = Contract()

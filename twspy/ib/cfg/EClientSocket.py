@@ -28,6 +28,8 @@ moduleOutputSubs = [
 
     (r'print\("Server Version:" \+ self\.m_serverVersion\)',
      r'print("Server Version:" + str(self.m_serverVersion))',),
+
+    (r', "" \+ e\)', ', str(e))'),
 ]
 
 typeSubs = {'char': 'chr'}

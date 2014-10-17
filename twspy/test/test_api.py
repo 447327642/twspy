@@ -107,3 +107,18 @@ def test_historical_data(con):
 
     assert sleep_until(lambda: seen, 5.0)
     assert con.disconnect()
+
+def test_failing_request(con):
+    from twspy.ib.EClientErrors import EClientErrors
+    seen = []
+    def callback(msg):
+        seen.append(msg)
+    con.register(callback, 'error')
+    assert con.connect()
+    con.m_dos.close()
+    con.reqScannerParameters()
+    # reader thread might fail first, check all errors
+    for msg in seen:
+        if msg.errorCode == EClientErrors.FAIL_SEND_REQSCANNERPARAMETERS.m_errorCode:
+            return
+    assert False

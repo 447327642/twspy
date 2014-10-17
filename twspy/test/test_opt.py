@@ -1,32 +1,28 @@
+import ib.opt
 import pytest
 
-from twspy.opt import ibConnection, message
+import twspy.opt
 
 from .support import config, sleep_until
 
-@pytest.fixture
+@pytest.mark.parametrize('message', [twspy.opt.message, ib.opt.message])
+def test_message_namespace(message):
+    assert message.nextValidId.__name__ == 'NextValidId'
+    with pytest.raises(AttributeError):
+        message.NextValidId
+
+@pytest.fixture(params=[twspy.opt.ibConnection, ib.opt.ibConnection])
 def con(request):
-    con = ibConnection(*config)
+    con = request.param(*config)
     con.enableLogging()
     request.addfinalizer(lambda: con.disconnect())
     return con
 
-def test_message_namespace():
-    import twspy
-    message.nextValidId
-    message.NextValidId
-    twspy.message.nextValidId
-    with pytest.raises(AttributeError):
-        twspy.message.NextValidId
-
-def test_accept_capital_names():
+def test_accept_names(con):
     def callback(msg): pass
-    con = ibConnection()
-    for arg in [message.NextValidId, 'NextValidId']:
+    for arg in ['NextValidId', 'NEXTVALIDID', 'INVALID NAME']:
         assert con.register(callback, arg)
         assert con.unregister(callback, arg)
-    with pytest.raises(AssertionError):
-        con.register(callback, 'NEXTVALIDID')
 
 def test_basic(con):
     seen = {}
@@ -37,10 +33,22 @@ def test_basic(con):
 
     assert not con.disconnect()
     assert con.connect()
-    assert sleep_until(lambda: 'nextValidId' in seen, 1.0)
-    assert seen['nextValidId'].orderId > 0
+    assert sleep_until(lambda: 'NextValidId' in seen, 1.0)
+    assert seen['NextValidId'].orderId > 0
 
     assert con.disconnect()
+
+def test_which_names_work(con):
+    from functools import partial
+    seen = []
+    def callback(arg, msg):
+        seen.append(arg)
+
+    for name in ['nextValidId', 'NextValidId', 'NEXTVALIDID']:
+        assert con.register(partial(callback, name), name)
+
+    assert con.connect()
+    assert sleep_until(lambda: seen == ['NextValidId'], 1.0)
 
 def test_exception_in_handler(con):
     seen = []
@@ -49,14 +57,14 @@ def test_exception_in_handler(con):
     def callback2(msg):
         seen.append(True)
 
-    assert con.register(callback1, 'nextValidId')
-    assert con.register(callback2, 'nextValidId')
+    assert con.register(callback1, 'NextValidId')
+    assert con.register(callback2, 'NextValidId')
     assert con.connect()
     assert sleep_until(lambda: seen, 1.0)
 
     assert con.isConnected()
-    assert con.unregister(callback1, 'nextValidId')
-    assert con.unregister(callback2, 'nextValidId')
+    assert con.unregister(callback1, 'NextValidId')
+    assert con.unregister(callback2, 'NextValidId')
 
 def test_mutate_message(con):
     seen = []
@@ -67,7 +75,7 @@ def test_mutate_message(con):
         if msg.orderId == "test":
             seen.append(True)
 
-    assert con.register(callback1, 'nextValidId')
-    assert con.register(callback2, 'nextValidId')
+    assert con.register(callback1, 'NextValidId')
+    assert con.register(callback2, 'NextValidId')
     assert con.connect()
     assert sleep_until(lambda: seen, 1.0)

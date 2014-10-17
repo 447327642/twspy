@@ -1,19 +1,18 @@
 import traceback
 
-from . import Connection, message, messages
+from . import Connection, messages
 
-messages = {name: type(name, (object,), {'__slots__': value._fields})
+upper = lambda name: name[0].upper() + name[1:]
+messages = {name: type(upper(name), (object,), {'__slots__': value._fields})
             for name, value in messages.items()}
 
-class message(message):
-    pass
-for name, value in messages.items():
-    setattr(message, name[0].upper() + name[1:], value)
+message = type('message', (object,), messages)
+
 
 class ibConnection(Connection):
     def dispatch(self, name, args):
         try:
-            listeners = self.listeners[name]
+            listeners = self.listeners[upper(name)]
         except KeyError:
             return
         msg = messages[name]()
@@ -30,6 +29,11 @@ class ibConnection(Connection):
         if not isinstance(arg, str):
             name = arg.__name__
         else:
-            name = arg[0].lower() + arg[1:]
-        assert name in messages
+            name = arg
         return name
+
+    def registerAll(self, listener):
+        return self.register(listener, *(upper(name) for name in messages.keys()))
+
+    def unregisterAll(self, listener):
+        return self.unregister(listener, *(upper(name) for name in messages.keys()))

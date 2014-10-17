@@ -68,7 +68,8 @@ class Connection(object):
             name = arg.__name__
         else:
             name = arg[0].lower() + arg[1:]
-        assert name in messages
+        if name not in messages:
+            raise ValueError(arg)
         return name
 
     def getListeners(self, arg):

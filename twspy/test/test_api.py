@@ -29,7 +29,7 @@ def test_register():
         assert callback in con.getListeners(arg)
         assert con.unregister(callback, arg)
         assert not con.unregister(callback, arg)
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         con.register(callback, 'NEXTVALIDID')
 
 def test_attributes_before_connect():

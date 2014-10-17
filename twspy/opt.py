@@ -2,9 +2,6 @@ import traceback
 
 from . import Connection, messages
 
-lower = lambda name: name[0].lower() + name[1:]
-upper = lambda name: name[0].upper() + name[1:]
-
 
 class Message(object):
     def __init__(self, **kwargs):
@@ -17,9 +14,12 @@ class Message(object):
                           for slot in self.__slots__)
         if items:
             items = ' ' + items
-        return "<%s%s>" % (lower(type(self).__name__), items)
+        return "<%s%s>" % (self.typeName, items)
 
-messages = {name: type(upper(name), (Message,), {'__slots__': value._fields})
+upper = lambda name: name[0].upper() + name[1:]
+messages = {name:
+            type(upper(name), (Message,),
+                 {'__slots__': value._fields, 'typeName': name})
             for name, value in messages.items()}
 
 message = type('message', (object,), messages)

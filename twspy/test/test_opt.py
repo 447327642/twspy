@@ -8,6 +8,7 @@ from .support import config, sleep_until
 @pytest.mark.parametrize('message', [twspy.opt.message, ib.opt.message])
 def test_message_namespace(message):
     assert message.nextValidId.__name__ == 'NextValidId'
+    assert message.nextValidId.typeName == 'nextValidId'
     with pytest.raises(AttributeError):
         message.NextValidId
 

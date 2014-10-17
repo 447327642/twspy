@@ -22,6 +22,10 @@ def test_register():
     with pytest.raises(AssertionError):
         con.register(callback, 'NextValidId')
 
+def test_attributes_before_connect():
+    con = Connection()
+    assert not con.isConnected()
+
 def test_basic(capsys):
     seen = {}
     def callback(msg):

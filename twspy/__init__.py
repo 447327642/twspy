@@ -38,19 +38,17 @@ class Dispatcher(EWrapper):
 class Connection(object):
     def __init__(self, host='localhost', port=7496, clientId=0):
         self.host, self.port, self.clientId = host, port, clientId
-        self.client = None
+        self.client = EClientSocket(Dispatcher(self.dispatch))
         self.listeners = {}
 
     def connect(self):
-        client = self.client = EClientSocket(Dispatcher(self.dispatch))
-        client.eConnect(self.host, self.port, self.clientId)
-        return client.isConnected()
+        self.client.eConnect(self.host, self.port, self.clientId)
+        return self.client.isConnected()
 
     def disconnect(self):
-        client = self.client
-        if client and client.isConnected():
-            client.eDisconnect()
-            return not client.isConnected()
+        if self.client.isConnected():
+            self.client.eDisconnect()
+            return True
         return False
 
     def dispatch(self, name, args):

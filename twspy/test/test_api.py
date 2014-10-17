@@ -105,5 +105,5 @@ def test_historical_data(con):
     e = time.strftime('%Y%m%d %H:%M:%S')
     con.reqHistoricalData(1, c, e, "5 D", "1 hour", "TRADES", 1, 1, None)
 
-    assert sleep_until(lambda: seen, 1.0)
+    assert sleep_until(lambda: seen, 5.0)
     assert con.disconnect()

@@ -19,7 +19,8 @@ def test_constructor():
 def test_register():
     def callback(msg): pass
     con = Connection()
-    for arg in [message.nextValidId, 'nextValidId']:
+    for arg in [message.nextValidId, 'nextValidId',
+                message.NextValidId, 'NextValidId']:
         assert not con.unregister(callback, arg)
         assert con.register(callback, arg)
         assert not con.register(callback, arg)
@@ -27,7 +28,7 @@ def test_register():
         assert con.unregister(callback, arg)
         assert not con.unregister(callback, arg)
     with pytest.raises(AssertionError):
-        con.register(callback, 'NextValidId')
+        con.register(callback, 'NEXTVALIDID')
 
 def test_attributes_before_connect():
     con = Connection()

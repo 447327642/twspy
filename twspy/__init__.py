@@ -17,6 +17,8 @@ for name, args in functions.items():
     messages[name] = namedtuple(name, args)
 
 message = type('message', (object,), messages)
+for name, value in messages.items():
+    setattr(message, name[0].upper() + name[1:], value)
 
 
 class Dispatcher(EWrapper):
@@ -65,7 +67,7 @@ class Connection(object):
         if not isinstance(arg, str):
             name = arg.__name__
         else:
-            name = arg
+            name = arg[0].lower() + arg[1:]
         assert name in messages
         return name
 

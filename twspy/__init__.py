@@ -116,3 +116,5 @@ class Connection(object):
 
     def __getattr__(self, name):
         return getattr(self.client, name)
+
+ibConnection = Connection

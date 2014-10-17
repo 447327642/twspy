@@ -2,8 +2,24 @@ import traceback
 
 from . import Connection, messages
 
+lower = lambda name: name[0].lower() + name[1:]
 upper = lambda name: name[0].upper() + name[1:]
-messages = {name: type(upper(name), (object,), {'__slots__': value._fields})
+
+
+class Message(object):
+    def __init__(self, **kwargs):
+        for slot in self.__slots__:
+            setattr(self, slot, kwargs.pop(slot, None))
+        assert not kwargs
+
+    def __repr__(self):
+        items = ", ".join("%s=%s" % (slot, getattr(self, slot))
+                          for slot in self.__slots__)
+        if items:
+            items = ' ' + items
+        return "<%s%s>" % (lower(type(self).__name__), items)
+
+messages = {name: type(upper(name), (Message,), {'__slots__': value._fields})
             for name, value in messages.items()}
 
 message = type('message', (object,), messages)

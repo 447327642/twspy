@@ -11,6 +11,19 @@ def test_message_namespace(message):
     with pytest.raises(AttributeError):
         message.NextValidId
 
+    msg = message.openOrderEnd()
+    assert str(msg) == "<openOrderEnd>"
+
+    msg = message.nextValidId()
+    assert str(msg) == "<nextValidId orderId=None>"
+    msg = message.nextValidId(orderId=42)
+    assert str(msg) == "<nextValidId orderId=42>"
+    pytest.raises(TypeError, message.nextValidId, 42)
+    pytest.raises(AssertionError, message.nextValidId, orderId=42, extraArg=None)
+
+    msg = message.orderStatus()
+    assert str(msg) == "<orderStatus orderId=None, status=None, filled=None, remaining=None, avgFillPrice=None, permId=None, parentId=None, lastFillPrice=None, clientId=None, whyHeld=None>"
+
 @pytest.fixture(params=[twspy.opt.ibConnection, ib.opt.ibConnection])
 def con(request):
     con = request.param(*config)

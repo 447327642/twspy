@@ -41,3 +41,19 @@ def test_basic(con):
     assert seen['nextValidId'].orderId > 0
 
     assert con.disconnect()
+
+def test_exception_in_handler(con):
+    seen = []
+    def callback1(msg):
+        raise Exception('test')
+    def callback2(msg):
+        seen.append(True)
+
+    assert con.register(callback1, 'nextValidId')
+    assert con.register(callback2, 'nextValidId')
+    assert con.connect()
+    assert sleep_until(lambda: seen, 1.0)
+
+    assert con.isConnected()
+    assert con.unregister(callback1, 'nextValidId')
+    assert con.unregister(callback2, 'nextValidId')

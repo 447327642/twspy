@@ -2,6 +2,9 @@ import traceback
 
 from . import Connection, message, messages
 
+messages = {name: type(name, (object,), {'__slots__': value._fields})
+            for name, value in messages.items()}
+
 class message(message):
     pass
 for name, value in messages.items():
@@ -13,7 +16,9 @@ class ibConnection(Connection):
             listeners = self.listeners[name]
         except KeyError:
             return
-        msg = messages[name]._make(args)
+        msg = messages[name]()
+        for i, arg in enumerate(msg.__slots__):
+            setattr(msg, arg, args[i])
         for listener in listeners:
             try:
                 listener(msg)

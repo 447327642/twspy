@@ -57,3 +57,17 @@ def test_exception_in_handler(con):
     assert con.isConnected()
     assert con.unregister(callback1, 'nextValidId')
     assert con.unregister(callback2, 'nextValidId')
+
+def test_mutate_message(con):
+    seen = []
+    def callback1(msg):
+        assert msg.orderId > 0
+        msg.orderId = "test"
+    def callback2(msg):
+        if msg.orderId == "test":
+            seen.append(True)
+
+    assert con.register(callback1, 'nextValidId')
+    assert con.register(callback2, 'nextValidId')
+    assert con.connect()
+    assert sleep_until(lambda: seen, 1.0)

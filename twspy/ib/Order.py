@@ -200,6 +200,9 @@ class Order(object):
     #  order combo legs
     m_orderComboLegs = Vector()
 
+    #  order misc options
+    m_orderMiscOptions = None
+
     def __init__(self):
         """ generated source for method __init__ """
         self.m_lmtPrice = Double.MAX_VALUE

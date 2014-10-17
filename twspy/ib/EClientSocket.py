@@ -104,7 +104,8 @@ class EClientSocket(object):
     #  61 = can receive multiplier in openOrder
     #       can receive tradingClass in openOrder, updatePortfolio, execDetails and position
     #  62 = can receive avgCost in position message
-    CLIENT_VERSION = 62
+    #  63 = can receive verifyMessageAPI, verifyCompleted, displayGroupList and displayGroupUpdated messages
+    CLIENT_VERSION = 63
     SERVER_VERSION = 38
     EOL = chr(0).encode()
     BAG_SEC_TYPE = "BAG"
@@ -166,6 +167,13 @@ class EClientSocket(object):
     REQ_ACCOUNT_SUMMARY = 62
     CANCEL_ACCOUNT_SUMMARY = 63
     CANCEL_POSITIONS = 64
+    VERIFY_REQUEST = 65
+    VERIFY_MESSAGE = 66
+    QUERY_DISPLAY_GROUPS = 67
+    SUBSCRIBE_TO_GROUP_EVENTS = 68
+    UPDATE_DISPLAY_GROUP = 69
+    UNSUBSCRIBE_FROM_GROUP_EVENTS = 70
+    START_API = 71
     MIN_SERVER_VER_REAL_TIME_BARS = 34
     MIN_SERVER_VER_SCALE_ORDERS = 35
     MIN_SERVER_VER_SNAPSHOT_MKT_DATA = 35
@@ -202,6 +210,7 @@ class EClientSocket(object):
     MIN_SERVER_VER_ACCT_SUMMARY = 67
     MIN_SERVER_VER_TRADING_CLASS = 68
     MIN_SERVER_VER_SCALE_TABLE = 69
+    MIN_SERVER_VER_LINKING = 70
     m_anyWrapper = None
 
     #  msg handler
@@ -216,6 +225,8 @@ class EClientSocket(object):
     #  thread which reads msgs from socket
     m_serverVersion = int()
     m_TwsTime = None
+    m_clientId = int()
+    m_extraAuth = bool()
 
     def serverVersion(self):
         """ generated source for method serverVersion """
@@ -237,21 +248,38 @@ class EClientSocket(object):
         """ generated source for method isConnected """
         return self.m_connected
 
+    @synchronized
+    def setExtraAuth(self, extraAuth):
+        """ generated source for method setExtraAuth """
+        self.m_extraAuth = extraAuth
+
     def __init__(self, anyWrapper):
         """ generated source for method __init__ """
         self.m_anyWrapper = anyWrapper
+        self.m_clientId = -1
+        self.m_extraAuth = False
+        self.m_connected = False
+        self.m_serverVersion = 0
 
     @overloaded
     @synchronized
     def eConnect(self, host, port, clientId):
         """ generated source for method eConnect """
+        self.eConnect(host, port, clientId, False)
+
+    @eConnect.register(object, str, int, int, bool)
+    @synchronized
+    def eConnect_0(self, host, port, clientId, extraAuth):
+        """ generated source for method eConnect_0 """
         #  already connected?
         host = self.checkConnected(host)
+        self.m_clientId = clientId
+        self.m_extraAuth = extraAuth
         if host is None:
             return
         try:
             socket = Socket(host, port)
-            self.eConnect(socket, clientId)
+            self.eConnect(socket)
         except Exception as e:
             self.eDisconnect()
             self.connectionError()
@@ -276,8 +304,15 @@ class EClientSocket(object):
 
     @eConnect.register(object, Socket, int)
     @synchronized
-    def eConnect_0(self, socket, clientId):
-        """ generated source for method eConnect_0 """
+    def eConnect_1(self, socket, clientId):
+        """ generated source for method eConnect_1 """
+        self.m_clientId = clientId
+        self.eConnect(socket)
+
+    @eConnect.register(object, Socket)
+    @synchronized
+    def eConnect_2(self, socket):
+        """ generated source for method eConnect_2 """
         #  create io streams
         self.m_dos = DataOutputStream(socket.getOutputStream())
         #  set client version
@@ -294,12 +329,15 @@ class EClientSocket(object):
             self.eDisconnect()
             self.m_anyWrapper.error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS.code_(), EClientErrors.UPDATE_TWS.msg())
             return
-        #  Send the client id
-        if self.m_serverVersion >= 3:
-            self.send(clientId)
-        self.m_reader.start()
         #  set connected flag
         self.m_connected = True
+        #  Send the client id
+        if self.m_serverVersion >= 3:
+            if self.m_serverVersion < self.MIN_SERVER_VER_LINKING:
+                self.send(self.m_clientId)
+            elif not self.m_extraAuth:
+                startAPI()
+        self.m_reader.start()
 
     @synchronized
     def eDisconnect(self):
@@ -308,6 +346,8 @@ class EClientSocket(object):
         if self.m_dos is None:
             return
         self.m_connected = False
+        self.m_extraAuth = False
+        self.m_clientId = -1
         self.m_serverVersion = 0
         self.m_TwsTime = ""
         dos = self.m_dos
@@ -326,6 +366,22 @@ class EClientSocket(object):
                 dos.close()
         except Exception as e:
             pass
+
+    @synchronized
+    def startAPI(self):
+        """ generated source for method startAPI """
+        #  not connected?
+        if not self.m_connected:
+            self.notConnected()
+            return
+        VERSION = 1
+        try:
+            self.send(self.START_API)
+            self.send(VERSION)
+            self.send(self.m_clientId)
+        except Exception as e:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_STARTAPI, "" + e)
+            self.close()
 
     @synchronized
     def cancelScannerSubscription(self, tickerId):
@@ -366,7 +422,7 @@ class EClientSocket(object):
             self.close()
 
     @synchronized
-    def reqScannerSubscription(self, tickerId, subscription):
+    def reqScannerSubscription(self, tickerId, subscription, scannerSubscriptionOptions):
         """ generated source for method reqScannerSubscription """
         #  not connected?
         if not self.m_connected:
@@ -375,7 +431,7 @@ class EClientSocket(object):
         if self.m_serverVersion < 24:
             self.error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, "  It does not support API scanner subscription.")
             return
-        VERSION = 3
+        VERSION = 4
         try:
             self.send(self.REQ_SCANNER_SUBSCRIPTION)
             self.send(VERSION)
@@ -403,12 +459,26 @@ class EClientSocket(object):
                 self.send(subscription.scannerSettingPairs())
             if self.m_serverVersion >= 27:
                 self.send(subscription.stockTypeFilter())
+            #  send scannerSubscriptionOptions parameter
+            if self.m_serverVersion >= self.MIN_SERVER_VER_LINKING:
+                scannerSubscriptionOptionsStr = StringBuilder()
+                scannerSubscriptionOptionsCount = 0 if scannerSubscriptionOptions is None else len(scannerSubscriptionOptions)
+                if scannerSubscriptionOptionsCount > 0:
+                    i = 0
+                    while i < scannerSubscriptionOptionsCount:
+                        tagValue = scannerSubscriptionOptions.get(i)
+                        scannerSubscriptionOptionsStr.append(tagValue.m_tag)
+                        scannerSubscriptionOptionsStr.append("=")
+                        scannerSubscriptionOptionsStr.append(tagValue.m_value)
+                        scannerSubscriptionOptionsStr.append(";")
+                        i += 1
+                self.send(scannerSubscriptionOptionsStr.__str__())
         except Exception as e:
             self.error(tickerId, EClientErrors.FAIL_SEND_REQSCANNER, "" + e)
             self.close()
 
     @synchronized
-    def reqMktData(self, tickerId, contract, genericTickList, snapshot):
+    def reqMktData(self, tickerId, contract, genericTickList, snapshot, mktDataOptions):
         """ generated source for method reqMktData """
         if not self.m_connected:
             self.error(EClientErrors.NO_VALID_ID, EClientErrors.NOT_CONNECTED, "")
@@ -428,7 +498,7 @@ class EClientSocket(object):
             if not self.IsEmpty(contract.m_tradingClass):
                 self.error(tickerId, EClientErrors.UPDATE_TWS, "  It does not support tradingClass parameter in reqMarketData.")
                 return
-        VERSION = 10
+        VERSION = 11
         try:
             #  send req mkt data msg
             self.send(self.REQ_MKT_DATA)
@@ -486,6 +556,20 @@ class EClientSocket(object):
                 self.send(genericTickList)
             if self.m_serverVersion >= self.MIN_SERVER_VER_SNAPSHOT_MKT_DATA:
                 self.send(snapshot)
+            #  send mktDataOptions parameter
+            if self.m_serverVersion >= self.MIN_SERVER_VER_LINKING:
+                mktDataOptionsStr = StringBuilder()
+                mktDataOptionsCount = 0 if mktDataOptions is None else len(mktDataOptions)
+                if mktDataOptionsCount > 0:
+                    i = 0
+                    while i < mktDataOptionsCount:
+                        tagValue = mktDataOptions.get(i)
+                        mktDataOptionsStr.append(tagValue.m_tag)
+                        mktDataOptionsStr.append("=")
+                        mktDataOptionsStr.append(tagValue.m_value)
+                        mktDataOptionsStr.append(";")
+                        i += 1
+                self.send(mktDataOptionsStr.__str__())
         except Exception as e:
             self.error(tickerId, EClientErrors.FAIL_SEND_REQMKT, "" + e)
             self.close()
@@ -531,13 +615,13 @@ class EClientSocket(object):
 
     #  Note that formatData parameter affects intra-day bars only; 1-day bars always return with date in YYYYMMDD format. 
     @synchronized
-    def reqHistoricalData(self, tickerId, contract, endDateTime, durationStr, barSizeSetting, whatToShow, useRTH, formatDate):
+    def reqHistoricalData(self, tickerId, contract, endDateTime, durationStr, barSizeSetting, whatToShow, useRTH, formatDate, chartOptions):
         """ generated source for method reqHistoricalData """
         #  not connected?
         if not self.m_connected:
             self.notConnected()
             return
-        VERSION = 5
+        VERSION = 6
         try:
             if self.m_serverVersion < 16:
                 self.error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, "  It does not support historical data backfill.")
@@ -588,12 +672,26 @@ class EClientSocket(object):
                         self.send(comboLeg.m_action)
                         self.send(comboLeg.m_exchange)
                         i += 1
+            #  send chartOptions parameter
+            if self.m_serverVersion >= self.MIN_SERVER_VER_LINKING:
+                chartOptionsStr = StringBuilder()
+                chartOptionsCount = 0 if chartOptions is None else len(chartOptions)
+                if chartOptionsCount > 0:
+                    i = 0
+                    while i < chartOptionsCount:
+                        tagValue = chartOptions.get(i)
+                        chartOptionsStr.append(tagValue.m_tag)
+                        chartOptionsStr.append("=")
+                        chartOptionsStr.append(tagValue.m_value)
+                        chartOptionsStr.append(";")
+                        i += 1
+                self.send(chartOptionsStr.__str__())
         except Exception as e:
             self.error(tickerId, EClientErrors.FAIL_SEND_REQHISTDATA, "" + e)
             self.close()
 
     @synchronized
-    def reqRealTimeBars(self, tickerId, contract, barSize, whatToShow, useRTH):
+    def reqRealTimeBars(self, tickerId, contract, barSize, whatToShow, useRTH, realTimeBarsOptions):
         """ generated source for method reqRealTimeBars """
         #  not connected?
         if not self.m_connected:
@@ -606,7 +704,7 @@ class EClientSocket(object):
             if not self.IsEmpty(contract.m_tradingClass) or (contract.m_conId > 0):
                 self.error(tickerId, EClientErrors.UPDATE_TWS, "  It does not support conId and tradingClass parameters in reqRealTimeBars.")
                 return
-        VERSION = 2
+        VERSION = 3
         try:
             #  send req mkt data msg
             self.send(self.REQ_REAL_TIME_BARS)
@@ -631,6 +729,20 @@ class EClientSocket(object):
             #  this parameter is not currently used
             self.send(whatToShow)
             self.send(useRTH)
+            #  send realTimeBarsOptions parameter
+            if self.m_serverVersion >= self.MIN_SERVER_VER_LINKING:
+                realTimeBarsOptionsStr = StringBuilder()
+                realTimeBarsOptionsCount = 0 if realTimeBarsOptions is None else len(realTimeBarsOptions)
+                if realTimeBarsOptionsCount > 0:
+                    i = 0
+                    while i < realTimeBarsOptionsCount:
+                        tagValue = realTimeBarsOptions.get(i)
+                        realTimeBarsOptionsStr.append(tagValue.m_tag)
+                        realTimeBarsOptionsStr.append("=")
+                        realTimeBarsOptionsStr.append(tagValue.m_value)
+                        realTimeBarsOptionsStr.append(";")
+                        i += 1
+                self.send(realTimeBarsOptionsStr.__str__())
         except Exception as e:
             self.error(tickerId, EClientErrors.FAIL_SEND_REQRTBARS, "" + e)
             self.close()
@@ -686,7 +798,7 @@ class EClientSocket(object):
             self.close()
 
     @synchronized
-    def reqMktDepth(self, tickerId, contract, numRows):
+    def reqMktDepth(self, tickerId, contract, numRows, mktDepthOptions):
         """ generated source for method reqMktDepth """
         #  not connected?
         if not self.m_connected:
@@ -700,7 +812,7 @@ class EClientSocket(object):
             if not self.IsEmpty(contract.m_tradingClass) or (contract.m_conId > 0):
                 self.error(tickerId, EClientErrors.UPDATE_TWS, "  It does not support conId and tradingClass parameters in reqMktDepth.")
                 return
-        VERSION = 4
+        VERSION = 5
         try:
             #  send req mkt data msg
             self.send(self.REQ_MKT_DEPTH)
@@ -723,6 +835,20 @@ class EClientSocket(object):
                 self.send(contract.m_tradingClass)
             if self.m_serverVersion >= 19:
                 self.send(numRows)
+            #  send mktDepthOptions parameter
+            if self.m_serverVersion >= self.MIN_SERVER_VER_LINKING:
+                mktDepthOptionsStr = StringBuilder()
+                mktDepthOptionsCount = 0 if mktDepthOptions is None else len(mktDepthOptions)
+                if mktDepthOptionsCount > 0:
+                    i = 0
+                    while i < mktDepthOptionsCount:
+                        tagValue = mktDepthOptions.get(i)
+                        mktDepthOptionsStr.append(tagValue.m_tag)
+                        mktDepthOptionsStr.append("=")
+                        mktDepthOptionsStr.append(tagValue.m_value)
+                        mktDepthOptionsStr.append(";")
+                        i += 1
+                self.send(mktDepthOptionsStr.__str__())
         except Exception as e:
             self.error(tickerId, EClientErrors.FAIL_SEND_REQMKTDEPTH, "" + e)
             self.close()
@@ -912,7 +1038,7 @@ class EClientSocket(object):
             if not self.IsEmpty(order.m_scaleTable) or not self.IsEmpty(order.m_activeStartTime) or not self.IsEmpty(order.m_activeStopTime):
                 self.error(id, EClientErrors.UPDATE_TWS, "  It does not support scaleTable, activeStartTime and activeStopTime parameters.")
                 return
-        VERSION = 27 if (self.m_serverVersion < self.MIN_SERVER_VER_NOT_HELD) else 41
+        VERSION = 27 if (self.m_serverVersion < self.MIN_SERVER_VER_NOT_HELD) else 42
         #  send place order msg
         try:
             self.send(self.PLACE_ORDER)
@@ -1149,6 +1275,21 @@ class EClientSocket(object):
                             i += 1
             if self.m_serverVersion >= self.MIN_SERVER_VER_WHAT_IF_ORDERS:
                 self.send(order.m_whatIf)
+            #  send orderMiscOptions parameter
+            if self.m_serverVersion >= self.MIN_SERVER_VER_LINKING:
+                orderMiscOptionsStr = StringBuilder()
+                orderMiscOptions = order.m_orderMiscOptions
+                orderMiscOptionsCount = 0 if orderMiscOptions is None else len(orderMiscOptions)
+                if orderMiscOptionsCount > 0:
+                    i = 0
+                    while i < orderMiscOptionsCount:
+                        tagValue = orderMiscOptions.get(i)
+                        orderMiscOptionsStr.append(tagValue.m_tag)
+                        orderMiscOptionsStr.append("=")
+                        orderMiscOptionsStr.append(tagValue.m_value)
+                        orderMiscOptionsStr.append(";")
+                        i += 1
+                self.send(orderMiscOptionsStr.__str__())
         except Exception as e:
             self.error(id, EClientErrors.FAIL_SEND_ORDER, "" + e)
             self.close()
@@ -1700,6 +1841,132 @@ class EClientSocket(object):
             self.m_dos.write(b.getBytes())
         except IOError as e:
             self.error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_CANACCOUNTDATA, "" + e)
+
+    @synchronized
+    def verifyRequest(self, apiName, apiVersion):
+        """ generated source for method verifyRequest """
+        #  not connected?
+        if not self.m_connected:
+            self.notConnected()
+            return
+        if self.m_serverVersion < self.MIN_SERVER_VER_LINKING:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, "  It does not support verification request.")
+            return
+        if not self.m_extraAuth:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_VERIFYMESSAGE, "  Intent to authenticate needs to be expressed during initial connect request.")
+            return
+        VERSION = 1
+        b = Builder()
+        b.send(self.VERIFY_REQUEST)
+        b.send(VERSION)
+        b.send(apiName)
+        b.send(apiVersion)
+        try:
+            self.m_dos.write(b.getBytes())
+        except IOError as e:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_VERIFYREQUEST, "" + e)
+
+    @synchronized
+    def verifyMessage(self, apiData):
+        """ generated source for method verifyMessage """
+        #  not connected?
+        if not self.m_connected:
+            self.notConnected()
+            return
+        if self.m_serverVersion < self.MIN_SERVER_VER_LINKING:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, "  It does not support verification message sending.")
+            return
+        VERSION = 1
+        b = Builder()
+        b.send(self.VERIFY_MESSAGE)
+        b.send(VERSION)
+        b.send(apiData)
+        try:
+            self.m_dos.write(b.getBytes())
+        except IOError as e:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_VERIFYMESSAGE, "" + e)
+
+    @synchronized
+    def queryDisplayGroups(self, reqId):
+        """ generated source for method queryDisplayGroups """
+        #  not connected?
+        if not self.m_connected:
+            self.notConnected()
+            return
+        if self.m_serverVersion < self.MIN_SERVER_VER_LINKING:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, "  It does not support queryDisplayGroups request.")
+            return
+        VERSION = 1
+        b = Builder()
+        b.send(self.QUERY_DISPLAY_GROUPS)
+        b.send(VERSION)
+        b.send(reqId)
+        try:
+            self.m_dos.write(b.getBytes())
+        except IOError as e:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_QUERYDISPLAYGROUPS, "" + e)
+
+    @synchronized
+    def subscribeToGroupEvents(self, reqId, groupId):
+        """ generated source for method subscribeToGroupEvents """
+        #  not connected?
+        if not self.m_connected:
+            self.notConnected()
+            return
+        if self.m_serverVersion < self.MIN_SERVER_VER_LINKING:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, "  It does not support subscribeToGroupEvents request.")
+            return
+        VERSION = 1
+        b = Builder()
+        b.send(self.SUBSCRIBE_TO_GROUP_EVENTS)
+        b.send(VERSION)
+        b.send(reqId)
+        b.send(groupId)
+        try:
+            self.m_dos.write(b.getBytes())
+        except IOError as e:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_SUBSCRIBETOGROUPEVENTS, "" + e)
+
+    @synchronized
+    def updateDisplayGroup(self, reqId, contractInfo):
+        """ generated source for method updateDisplayGroup """
+        #  not connected?
+        if not self.m_connected:
+            self.notConnected()
+            return
+        if self.m_serverVersion < self.MIN_SERVER_VER_LINKING:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, "  It does not support updateDisplayGroup request.")
+            return
+        VERSION = 1
+        b = Builder()
+        b.send(self.UPDATE_DISPLAY_GROUP)
+        b.send(VERSION)
+        b.send(reqId)
+        b.send(contractInfo)
+        try:
+            self.m_dos.write(b.getBytes())
+        except IOError as e:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_UPDATEDISPLAYGROUP, "" + e)
+
+    @synchronized
+    def unsubscribeFromGroupEvents(self, reqId):
+        """ generated source for method unsubscribeFromGroupEvents """
+        #  not connected?
+        if not self.m_connected:
+            self.notConnected()
+            return
+        if self.m_serverVersion < self.MIN_SERVER_VER_LINKING:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, "  It does not support unsubscribeFromGroupEvents request.")
+            return
+        VERSION = 1
+        b = Builder()
+        b.send(self.UNSUBSCRIBE_FROM_GROUP_EVENTS)
+        b.send(VERSION)
+        b.send(reqId)
+        try:
+            self.m_dos.write(b.getBytes())
+        except IOError as e:
+            self.error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_UNSUBSCRIBEFROMGROUPEVENTS, "" + e)
 
     #  @deprecated, never called. 
     @overloaded

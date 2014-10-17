@@ -1,4 +1,4 @@
-SRC := ./src/IBJts/source/javaclient/com/ib/client
+SRC := ./src/IBJts/source/JavaClient/com/ib/client
 OBJ := $(addsuffix .py, $(basename $(notdir $(wildcard $(SRC)/*.java))))
 
 all:

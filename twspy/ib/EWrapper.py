@@ -167,3 +167,19 @@ class EWrapper(AnyWrapper):
     def accountSummaryEnd(self, reqId):
         """ generated source for method accountSummaryEnd """
 
+    @abstractmethod
+    def verifyMessageAPI(self, apiData):
+        """ generated source for method verifyMessageAPI """
+
+    @abstractmethod
+    def verifyCompleted(self, isSuccessful, errorText):
+        """ generated source for method verifyCompleted """
+
+    @abstractmethod
+    def displayGroupList(self, reqId, groups):
+        """ generated source for method displayGroupList """
+
+    @abstractmethod
+    def displayGroupUpdated(self, reqId, contractInfo):
+        """ generated source for method displayGroupUpdated """
+

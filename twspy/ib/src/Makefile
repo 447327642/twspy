@@ -1,4 +1,4 @@
-JAR := twsapi_macunix.970.01.jar
+JAR := twsapi_macunix.971.01.jar
 URL := http://interactivebrokers.github.io/downloads/$(JAR)
 
 all: $(JAR) IBJts

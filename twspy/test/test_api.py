@@ -103,7 +103,7 @@ def test_historical_data(con):
     c.m_exchange = 'SMART'
     c.m_primaryExch = 'NYSE'
     e = time.strftime('%Y%m%d %H:%M:%S')
-    con.reqHistoricalData(1, c, e, "5 D", "1 hour", "TRADES", 1, 1)
+    con.reqHistoricalData(1, c, e, "5 D", "1 hour", "TRADES", 1, 1, None)
 
     assert sleep_until(lambda: seen, 1.0)
     assert con.disconnect()

@@ -80,7 +80,7 @@ class StringBuffer(list):
 
 
 class StringBuilder(list):
-    def __init__(self, capacity):
+    def __init__(self, capacity=None):
         pass
 
     def __str__(self):

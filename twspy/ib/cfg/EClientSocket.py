@@ -1,6 +1,6 @@
 modulePrologueHandlers = [
     'from ..lang.python import long, overloaded',
-    'from ..lang.java import DataInputStream, DataOutputStream, Double, Integer, Socket',
+    'from ..lang.java import DataInputStream, DataOutputStream, Double, Integer, Socket, StringBuilder',
     'from .Builder import Builder',
     'from .EClientErrors import EClientErrors',
     'from .EReader import EReader',
@@ -20,6 +20,7 @@ moduleOutputSubs = [
         'send',
         'sendEOL',
         'sendMax',
+        'startAPI',
     ]
 ] + [
     (r'EOL = \[0\]', r'EOL = chr(0).encode()'),

@@ -15,7 +15,7 @@ def synchronized(call):
     return inner
 
 from ..lang.python import long, overloaded
-from ..lang.java import DataInputStream, DataOutputStream, Double, Integer, Socket
+from ..lang.java import DataInputStream, DataOutputStream, Double, Integer, Socket, StringBuilder
 from .Builder import Builder
 from .EClientErrors import EClientErrors
 from .EReader import EReader
@@ -336,7 +336,7 @@ class EClientSocket(object):
             if self.m_serverVersion < self.MIN_SERVER_VER_LINKING:
                 self.send(self.m_clientId)
             elif not self.m_extraAuth:
-                startAPI()
+                self.startAPI()
         self.m_reader.start()
 
     @synchronized

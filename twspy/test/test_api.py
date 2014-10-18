@@ -90,8 +90,12 @@ def test_historical_data(con):
     def callback(msg):
         if msg.date.startswith('finished'):
             seen.append(True)
+    def error(msg):
+        if msg.errorCode == 2105:
+            seen.append(msg)
 
     assert con.register(callback, 'historicalData')
+    assert con.register(error, 'error')
     assert con.connect()
 
     c = Contract()
@@ -103,6 +107,8 @@ def test_historical_data(con):
     con.reqHistoricalData(1, c, e, "5 D", "1 hour", "TRADES", 1, 1, None)
 
     assert sleep_until(lambda: seen, 5.0)
+    if seen[0] is not True:
+        pytest.xfail(seen[0].errorMsg)
     assert con.disconnect()
 
 def test_failing_request(con):

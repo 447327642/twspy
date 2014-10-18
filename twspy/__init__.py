@@ -18,6 +18,8 @@ for name, args in functions.items():
 
 message = type('message', (object,), messages)
 
+Listener = namedtuple('Listener', 'func options')
+
 
 class Dispatcher(EWrapper):
     def __init__(self, dispatch):
@@ -57,8 +59,22 @@ class Connection(object):
         except KeyError:
             return
         msg = messages[name]._make(args)
+        self._dispatch(name, msg, listeners)
+
+    def _dispatch(self, name, msg, listeners):
         for listener in listeners:
-            listener(msg)
+            try:
+                listener.func(msg)
+            except:
+                exceptions = listener.options.get('exceptions', 'raise')
+                if exceptions == 'unregister':
+                    self.unregister(listener.func, name)
+                elif exceptions == 'raise':
+                    raise
+                elif exceptions == 'pass':
+                    pass
+                else:
+                    assert False, exceptions
 
     @staticmethod
     def getName(arg):
@@ -72,35 +88,41 @@ class Connection(object):
 
     def getListeners(self, arg):
         name = self.getName(arg)
-        return self.listeners.get(name, [])
+        return [listener.func for listener in self.listeners.get(name, [])]
 
-    def register(self, listener, *args):
+    def register(self, func, *args, **options):
         count = 0
         for arg in args:
             name = self.getName(arg)
             listeners = self.listeners.setdefault(name, [])
-            if listener not in listeners:
-                listeners.append(listener)
+            for listener in listeners:
+                if listener.func is func:
+                    break
+            else:
+                listeners.append(Listener(func, options))
                 count += 1
         return count > 0
 
-    def unregister(self, listener, *args):
+    def unregister(self, func, *args):
         count = 0
         for arg in args:
             name = self.getName(arg)
             try:
-                self.listeners[name].remove(listener)
-            except (KeyError, ValueError):
-                pass
-            else:
-                count += 1
+                listeners = self.listeners[name]
+            except KeyError:
+                continue
+            for listener in listeners:
+                if listener.func is func:
+                    listeners.remove(listener)
+                    count += 1
+                    break
         return count > 0
 
-    def registerAll(self, listener):
-        return self.register(listener, *messages.keys())
+    def registerAll(self, func):
+        return self.register(func, *messages.keys())
 
-    def unregisterAll(self, listener):
-        return self.unregister(listener, *messages.keys())
+    def unregisterAll(self, func):
+        return self.unregister(func, *messages.keys())
 
     def enableLogging(self, enable=True):
         if enable:

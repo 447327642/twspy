@@ -69,18 +69,25 @@ def test_connect_multiple(con):
         assert not con.isConnected()
 
 def test_exception_in_handler(con):
-    seen = []
     def callback(msg):
         seen.append(True)
         raise Exception('test')
 
-    assert con.register(callback, 'nextValidId')
+    for options in [{}, {'exceptions': 'raise'}]:
+        seen = []
+        assert con.register(callback, 'nextValidId', **options)
+        assert con.connect()
+        assert sleep_until(lambda: seen, 1.0)
+        assert not con.isConnected()
+        assert not con.disconnect()
+        assert con.unregister(callback, 'nextValidId')
 
+    seen = []
+    assert con.register(callback, 'nextValidId', exceptions='unregister')
     assert con.connect()
     assert sleep_until(lambda: seen, 1.0)
-    assert not con.isConnected()
-    assert not con.disconnect()
-    assert con.unregister(callback, 'nextValidId')
+    assert con.isConnected()
+    assert callback not in con.getListeners('nextValidId')
 
 def test_historical_data(con):
     import time

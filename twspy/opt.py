@@ -1,5 +1,3 @@
-import traceback
-
 from . import Connection, messages
 
 
@@ -36,11 +34,7 @@ class ibConnection(Connection):
         msg = messages[name]()
         for i, arg in enumerate(msg.__slots__):
             setattr(msg, arg, args[i])
-        for listener in listeners:
-            try:
-                listener(msg)
-            except:
-                traceback.print_exc()
+        self._dispatch(name, msg, listeners)
 
     @staticmethod
     def getName(arg):
@@ -50,8 +44,11 @@ class ibConnection(Connection):
             name = arg
         return name
 
-    def registerAll(self, listener):
-        return self.register(listener, *(upper(name) for name in messages.keys()))
+    def register(*args):
+        return Connection.register(*args, exceptions='pass')
 
-    def unregisterAll(self, listener):
-        return self.unregister(listener, *(upper(name) for name in messages.keys()))
+    def registerAll(self, func):
+        return self.register(func, *(upper(name) for name in messages.keys()))
+
+    def unregisterAll(self, func):
+        return self.unregister(func, *(upper(name) for name in messages.keys()))

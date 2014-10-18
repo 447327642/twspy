@@ -4,6 +4,8 @@ from . import Connection, messages
 
 
 class Message(object):
+    __slots__ = ()
+
     def __init__(self, **kwargs):
         for slot in self.__slots__:
             setattr(self, slot, kwargs.pop(slot, None))

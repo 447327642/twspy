@@ -14,6 +14,8 @@ def test_message_namespace(message):
 
     msg = message.openOrderEnd()
     assert str(msg) == "<openOrderEnd>"
+    with pytest.raises(AttributeError):
+        msg.test = 42
 
     msg = message.nextValidId()
     assert str(msg) == "<nextValidId orderId=None>"

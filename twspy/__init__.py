@@ -65,7 +65,7 @@ class Connection(object):
     def _dispatch(self, name, msg, listeners):
         for listener in listeners:
             try:
-                listener.func(msg)
+                ret = listener.func(msg)
             except:
                 try:
                     exceptions = listener.options['exceptions']
@@ -79,6 +79,9 @@ class Connection(object):
                     pass
                 else:
                     assert False, exceptions
+            else:
+                if ret is not None:
+                    msg = ret
 
     @staticmethod
     def getName(arg):

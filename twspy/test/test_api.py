@@ -69,6 +69,19 @@ def test_connect_multiple(con):
         assert con.disconnect()
         assert not con.isConnected()
 
+def test_modify_msg(con):
+    def callback1(msg):
+        return "test"
+    def callback2(msg):
+        assert msg == "test"
+        seen.append(True)
+
+    seen = []
+    assert con.register(callback1, 'nextValidId')
+    assert con.register(callback2, 'nextValidId')
+    assert con.connect()
+    assert sleep_until(lambda: seen, 1.0)
+
 def test_exception_in_handler(con):
     def callback(msg):
         seen.append(True)

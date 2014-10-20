@@ -26,6 +26,10 @@ message = type('message', (object,), messages)
 
 
 class ibConnection(Connection):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('exceptions', 'pass')
+        Connection.__init__(self, *args, **kwargs)
+
     def dispatch(self, name, args):
         try:
             listeners = self.listeners[upper(name)]
@@ -43,9 +47,6 @@ class ibConnection(Connection):
         else:
             name = arg
         return name
-
-    def register(*args):
-        return Connection.register(*args, exceptions='pass')
 
     def registerAll(self, func):
         return self.register(func, *(upper(name) for name in messages.keys()))

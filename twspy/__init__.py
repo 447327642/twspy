@@ -38,10 +38,11 @@ class Dispatcher(EWrapper):
 
 
 class Connection(object):
-    def __init__(self, host='localhost', port=7496, clientId=0):
+    def __init__(self, host='localhost', port=7496, clientId=0, **options):
         self.host, self.port, self.clientId = host, port, clientId
         self.client = EClientSocket(Dispatcher(self.dispatch))
         self.listeners = {}
+        self.options = options
 
     def connect(self):
         self.client.eConnect(self.host, self.port, self.clientId)
@@ -66,7 +67,10 @@ class Connection(object):
             try:
                 listener.func(msg)
             except:
-                exceptions = listener.options.get('exceptions', 'raise')
+                try:
+                    exceptions = listener.options['exceptions']
+                except KeyError:
+                    exceptions = self.options.get('exceptions', 'raise')
                 if exceptions == 'unregister':
                     self.unregister(listener.func, name)
                 elif exceptions == 'raise':

@@ -15,6 +15,7 @@ def test_constructor():
     assert Connection() is not None
     assert Connection(clientId=0) is not None
     assert Connection(host='test', port=12345, clientId=0) is not None
+    assert Connection(host='test', port=12345, clientId=0, exceptions='raise') is not None
 
 def test_register():
     def callback(msg): pass

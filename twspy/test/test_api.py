@@ -33,15 +33,12 @@ def test_register():
         assert con.unregister(type_, callback)
         assert not con.unregister(type_, callback)
 
-    assert con.register([message.nextValidId, 'nextValidId', 'error'], callback)
-    assert con.unregister((message.nextValidId, 'nextValidId', 'error'), callback)
-
     with pytest.raises(ValueError):
         con.register('NextValidId', callback)
 
 def test_decorator():
     con = Connection()
-    @con.listener('nextValidId', exceptions='raise')
+    @con.listener('nextValidId', 'openOrderEnd', exceptions='raise')
     def callback(msg):
         pass
     assert callback in con.getListeners('nextValidId')
@@ -68,7 +65,7 @@ def test_basic(con, capsys):
 
     assert con.disconnect()
     assert not con.disconnect()
-    assert not con.enableLogging(False)
+    assert con.enableLogging(False)
 
     out, err = capsys.readouterr()
     assert 'currentTime' in err

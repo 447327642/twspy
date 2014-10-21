@@ -92,60 +92,52 @@ class Connection(object):
             raise ValueError(type_)
         return name
 
-    @classmethod
-    def _getNames(cls, types):
-        if isinstance(types, (str, type)):
-            types = (types,)
-        return [cls._getName(type_) for type_ in types]
-
     def getListeners(self, type_):
         name = self._getName(type_)
         return [listener.func for listener in self.listeners.get(name, [])]
 
-    def listener(self, types, **options):
+    def listener(self, *types, **options):
         def decorator(func):
-            self.register(types, func, **options)
+            for type_ in types:
+                self.register(type_, func, **options)
             return func
         return decorator
 
-    def register(self, types, func, *args, **options):
-        count = 0
-        for name in self._getNames(types):
-            listeners = self.listeners.setdefault(name, [])
-            for listener in listeners:
-                if listener.func is func:
-                    break
-            else:
-                listeners.append(Listener(func, args, options))
-                count += 1
-        return count > 0
+    def register(self, type_, func, *args, **options):
+        name = self._getName(type_)
+        listeners = self.listeners.setdefault(name, [])
+        for listener in listeners:
+            if listener.func is func:
+                return False
+        listeners.append(Listener(func, args, options))
+        return True
 
-    def unregister(self, types, func):
-        count = 0
-        for name in self._getNames(types):
-            try:
-                listeners = self.listeners[name]
-            except KeyError:
-                continue
-            for listener in listeners:
-                if listener.func is func:
-                    listeners.remove(listener)
-                    count += 1
-                    break
-        return count > 0
+    def unregister(self, type_, func):
+        name = self._getName(type_)
+        listeners = self.listeners.get(name, [])
+        for listener in listeners:
+            if listener.func is func:
+                listeners.remove(listener)
+                return True
+        return False
 
     def registerAll(self, func):
-        return self.register(messages.keys(), func)
+        count = 0
+        for type_ in messages.keys():
+            count += self.register(type_, func)
+        return count > 0
 
     def unregisterAll(self, func):
-        return self.unregister(messages.keys(), func)
+        count = 0
+        for type_ in messages.keys():
+            count += self.unregister(type_, func)
+        return count > 0
 
     def enableLogging(self, enable=True):
         if enable:
-            self.registerAll(self.logMessage)
+            return self.registerAll(self.logMessage)
         else:
-            self.unregisterAll(self.logMessage)
-        return enable
+            return self.unregisterAll(self.logMessage)
 
     @staticmethod
     def logMessage(msg):

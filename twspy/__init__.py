@@ -43,19 +43,15 @@ class Dispatcher(EWrapper):
         for listener in listeners:
             try:
                 ret = listener.func(msg, *listener.args)
-            except:
+            except Exception as e:
                 try:
                     exceptions = listener.options['exceptions']
                 except KeyError:
                     exceptions = self.con.options.get('exceptions', 'raise')
                 if exceptions == 'unregister':
                     self.con.unregister(name, listener.func)
-                elif exceptions == 'raise':
-                    raise
-                elif exceptions == 'pass':
-                    pass
-                else:
-                    assert False, exceptions
+                elif exceptions != 'pass':
+                    raise e
             else:
                 if ret is not None:
                     msg = ret

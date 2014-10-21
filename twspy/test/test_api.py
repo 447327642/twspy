@@ -107,18 +107,25 @@ def test_modify_msg(con):
     con.connect()
     assert sleep_until(lambda: seen, 1.0)
 
-def test_exception_in_handler(con):
+def test_exception_in_handler(con, request):
     def callback(msg):
         seen.append(True)
         raise Exception('test')
+    def error(msg):
+        errors.append(msg)
 
-    for options in [{}, {'exceptions': 'raise'}]:
+    con.register('error', error)
+    for options in [{}, {'exceptions': 'raise'}, {'exceptions': 123}]:
         seen = []
+        errors = []
         con.register('nextValidId', callback, **options)
         con.connect()
-        assert sleep_until(lambda: seen, 1.0)
+        assert sleep_until(lambda: errors, 1.0)
+        assert type(errors[0].errorMsg) is Exception
+        assert errors[0].errorMsg.message == 'test'
         assert not con.isConnected()
         con.unregister('nextValidId', callback)
+    con.unregister('error', error)
 
     seen = []
     con.register('nextValidId', callback, exceptions='unregister')
@@ -126,6 +133,16 @@ def test_exception_in_handler(con):
     assert sleep_until(lambda: seen, 1.0)
     assert con.isConnected()
     assert callback not in con.getListeners('nextValidId')
+    con.close()
+
+    seen = []
+    con = Connection(*config, exceptions='pass')
+    request.addfinalizer(lambda: con.close())
+    con.register('nextValidId', callback)
+    con.connect()
+    assert sleep_until(lambda: seen, 1.0)
+    assert con.isConnected()
+    assert callback in con.getListeners('nextValidId')
 
 def test_historical_data(con):
     import time

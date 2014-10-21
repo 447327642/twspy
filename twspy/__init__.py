@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import inspect
 import sys
+import traceback
 from collections import namedtuple
 
 from twspy.ib.EClientSocket import EClientSocket
@@ -43,15 +44,15 @@ class Dispatcher(EWrapper):
         for listener in listeners:
             try:
                 ret = listener.func(msg, *listener.args)
-            except Exception as e:
-                try:
-                    exceptions = listener.options['exceptions']
-                except KeyError:
+            except Exception:
+                traceback.print_exc()
+                exceptions = listener.options.get('exceptions', None)
+                if exceptions is None:
                     exceptions = self.con.options.get('exceptions', 'raise')
                 if exceptions == 'unregister':
                     self.con.unregister(name, listener.func)
                 elif exceptions != 'pass':
-                    raise e
+                    raise
             else:
                 if ret is not None:
                     msg = ret

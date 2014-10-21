@@ -107,7 +107,7 @@ def test_modify_msg(con):
     con.connect()
     assert sleep_until(lambda: seen, 1.0)
 
-def test_exception_in_handler(con, request):
+def test_exception_in_handler_register(con):
     def callback(msg):
         seen.append(True)
         raise Exception('test')
@@ -133,7 +133,11 @@ def test_exception_in_handler(con, request):
     assert sleep_until(lambda: seen, 1.0)
     assert con.isConnected()
     assert callback not in con.getListeners('nextValidId')
-    con.close()
+
+def test_exception_in_handler_constructor(request, capsys):
+    def callback(msg):
+        seen.append(True)
+        raise Exception('test')
 
     seen = []
     con = Connection(*config, exceptions='pass')
@@ -143,6 +147,10 @@ def test_exception_in_handler(con, request):
     assert sleep_until(lambda: seen, 1.0)
     assert con.isConnected()
     assert callback in con.getListeners('nextValidId')
+
+    out, err = capsys.readouterr()
+    assert 'Traceback' in err
+    assert 'callback' in err
 
 def test_historical_data(con):
     import time

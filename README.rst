@@ -12,36 +12,25 @@ Reasons to use twspy
 
 Design changes in new wrapper
 -----------------------------
+- Exceptions are used to indicate errors instead of return values.
 - Message names are validated during register/unregister to avoid silent errors.
 - Messages are represented using namedtuples rather than regular class instances.
-- Exceptions in callbacks aren't swallowed with a log message by default. Instead they are left alone, allowing them to pass back to the TWS API resulting in a disconnect. If you want a different behavior, you can write a wrapper for your callbacks that swallows/handles exceptions.
+- Exceptions in callbacks aren't swallowed with a log message by default. Instead they are left alone, allowing them to pass back to the TWS API resulting in a disconnect. To get a different behavior, specify the 'exceptions' option when creating a connection or registering a listener.
 
 Using twspy
 -----------
 .. code-block:: python
 
-    from twspy import Connection, message
-    con = Connection(host, port, client_id)
+    from twspy import Connection
+    con = Connection(host, port, clientId)
+
+    @con.listener('nextValidId')
     def my_callback(msg):
         assert msg.orderId > 0
-    con.register(message.nextValidId, my_callback)
+
+    def my_other_callback(msg, extra):
+        assert extra == 123
+    con.register('openOrder', my_other_callback, 123, exceptions='unregister')
+
     con.connect()
     ...
-
-See ``twspy/test/test_api.py`` for additional examples.
-
-Additionally, one can use the TWS API without the "Pythonic" wrapper. See ``twspy/test/test_client.py`` for examples.
-
-Note: in TWS API 971.01, many EClientSocket request methods now require an additional options parameter which can be None.
-
-Using the ibpy compatibility wrapper
-------------------------------------
-If you want to stick with the ibpy design choices, you can use the optional wrapper, which should act as a drop-in replacement.
-
-.. code-block:: python
-
-    from ib.opt import ibConnection, message ->
-    from twspy.opt import ibConnection, message
-
-    from ib.ext.{} import {} ->
-    from twspy.ib.{} import {}

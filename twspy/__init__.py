@@ -18,8 +18,8 @@ Listener = namedtuple('Listener', 'func args options')
 
 
 class Dispatcher(EWrapper):
-    def __init__(self, dispatch):
-        self._dispatch = dispatch
+    def __init__(self, con):
+        self.con = con
 
     def make(name):
         def func(self, *args):
@@ -34,25 +34,9 @@ class Dispatcher(EWrapper):
     def error(self, *args):
         self._dispatch('error', (None,) * (3 - len(args)) + args)
 
-
-class Connection(object):
-    def __init__(self, host='localhost', port=7496, clientId=0, **options):
-        self.host, self.port, self.clientId = host, port, clientId
-        self.client = EClientSocket(Dispatcher(self._dispatch))
-        self.listeners = {}
-        self.options = options
-
-    def connect(self):
-        self.client.eConnect(self.host, self.port, self.clientId)
-        if not self.client.isConnected():
-            raise IOError
-
-    def close(self):
-        self.client.eDisconnect()
-
     def _dispatch(self, name, args):
         try:
-            listeners = self.listeners[name]
+            listeners = self.con.listeners[name]
         except KeyError:
             return
         msg = messages[name]._make(args)
@@ -63,9 +47,9 @@ class Connection(object):
                 try:
                     exceptions = listener.options['exceptions']
                 except KeyError:
-                    exceptions = self.options.get('exceptions', 'raise')
+                    exceptions = self.con.options.get('exceptions', 'raise')
                 if exceptions == 'unregister':
-                    self.unregister(name, listener.func)
+                    self.con.unregister(name, listener.func)
                 elif exceptions == 'raise':
                     raise
                 elif exceptions == 'pass':
@@ -75,6 +59,22 @@ class Connection(object):
             else:
                 if ret is not None:
                     msg = ret
+
+
+class Connection(object):
+    def __init__(self, host='localhost', port=7496, clientId=0, **options):
+        self.host, self.port, self.clientId = host, port, clientId
+        self.client = EClientSocket(Dispatcher(self))
+        self.listeners = {}
+        self.options = options
+
+    def connect(self):
+        self.client.eConnect(self.host, self.port, self.clientId)
+        if not self.client.isConnected():
+            raise IOError
+
+    def close(self):
+        self.client.eDisconnect()
 
     def getListeners(self, name):
         if name not in messages:

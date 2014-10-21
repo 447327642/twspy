@@ -15,7 +15,7 @@ def con(request):
 def test_dispatcher():
     from twspy import Dispatcher
     from twspy.ib.EWrapper import EWrapper
-    assert set(dir(Dispatcher)) - set(dir(EWrapper)) == set()
+    assert set(dir(Dispatcher)) - set(dir(EWrapper)) == {'_dispatch'}
 
 def test_constructor():
     assert Connection() is not None

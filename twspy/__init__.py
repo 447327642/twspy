@@ -48,13 +48,11 @@ class Connection(object):
 
     def connect(self):
         self.client.eConnect(self.host, self.port, self.clientId)
-        return self.client.isConnected()
+        if not self.client.isConnected():
+            raise IOError
 
     def disconnect(self):
-        if self.client.isConnected():
-            self.client.eDisconnect()
-            return True
-        return False
+        self.client.eDisconnect()
 
     def _dispatch(self, name, args):
         try:

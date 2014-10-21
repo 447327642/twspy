@@ -7,15 +7,12 @@ from collections import namedtuple
 from twspy.ib.EClientSocket import EClientSocket
 from twspy.ib.EWrapper import EWrapper
 
-functions = {}
 predicate = inspect.ismethod if sys.version_info[0] < 3 else inspect.isfunction
-for name, func in inspect.getmembers(EWrapper, predicate):
-    functions[name] = inspect.getargspec(func).args[1:]
+functions = {name: inspect.getargspec(func).args[1:] for name, func
+             in inspect.getmembers(EWrapper, predicate)}
 functions['error'] = ['id', 'errorCode', 'errorMsg']
 
-messages = {}
-for name, args in functions.items():
-    messages[name] = namedtuple(name, args)
+messages = {name: namedtuple(name, args) for name, args in functions.items()}
 
 Listener = namedtuple('Listener', 'func args options')
 
@@ -24,15 +21,15 @@ class Dispatcher(EWrapper):
     def __init__(self, dispatch):
         self._dispatch = dispatch
 
-    def make(name, spec):
+    def make(name):
         def func(self, *args):
             self._dispatch(name, args)
         return func
 
-    for name, value in messages.items():
-        locals()[name] = make(name, value._fields)
+    for name in messages:
+        locals()[name] = make(name)
 
-    del make, name, value
+    del make, name
 
     def error(self, *args):
         self._dispatch('error', (None,) * (3 - len(args)) + args)

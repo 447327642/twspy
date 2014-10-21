@@ -122,7 +122,7 @@ def test_exception_in_handler_register(con):
         con.connect()
         assert sleep_until(lambda: errors, 1.0)
         assert type(errors[0].errorMsg) is Exception
-        assert errors[0].errorMsg.message == 'test'
+        assert str(errors[0].errorMsg) == 'test'
         assert not con.isConnected()
         con.unregister('nextValidId', callback)
     con.unregister('error', error)

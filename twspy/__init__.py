@@ -108,36 +108,36 @@ class Connection(object):
         listeners = self.listeners.setdefault(name, [])
         for listener in listeners:
             if listener.func is func:
-                return False
+                raise ValueError(name, func)
         listeners.append(Listener(func, args, options))
-        return True
 
     def unregister(self, type_, func):
         name = self._getName(type_)
         listeners = self.listeners.get(name, [])
         for listener in listeners:
             if listener.func is func:
-                listeners.remove(listener)
-                return True
-        return False
+                return listeners.remove(listener)
+        raise ValueError(name, func)
 
     def registerAll(self, func):
-        count = 0
         for type_ in messages.keys():
-            count += self.register(type_, func)
-        return count > 0
+            try:
+                self.register(type_, func)
+            except ValueError:
+                pass
 
     def unregisterAll(self, func):
-        count = 0
         for type_ in messages.keys():
-            count += self.unregister(type_, func)
-        return count > 0
+            try:
+                self.unregister(type_, func)
+            except ValueError:
+                pass
 
     def enableLogging(self, enable=True):
         if enable:
-            return self.registerAll(self.logMessage)
+            self.registerAll(self.logMessage)
         else:
-            return self.unregisterAll(self.logMessage)
+            self.unregisterAll(self.logMessage)
 
     @staticmethod
     def logMessage(msg):

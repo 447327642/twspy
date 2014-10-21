@@ -157,3 +157,12 @@ def test_failing_request(con):
         if msg.errorCode == EClientErrors.FAIL_SEND_REQSCANNERPARAMETERS.m_errorCode:
             return
     assert False
+
+def test_callback_extra_args(con):
+    seen = []
+    def callback(msg, arg):
+        seen.append(arg)
+    con.register('nextValidId', callback, con)
+    assert con.connect()
+    assert sleep_until(lambda: seen, 1.0)
+    assert seen[0] is con

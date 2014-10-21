@@ -18,7 +18,7 @@ for name, args in functions.items():
 
 message = type('message', (object,), messages)
 
-Listener = namedtuple('Listener', 'func options')
+Listener = namedtuple('Listener', 'func args options')
 
 
 class Dispatcher(EWrapper):
@@ -65,7 +65,7 @@ class Connection(object):
     def _dispatch(self, name, msg, listeners):
         for listener in listeners:
             try:
-                ret = listener.func(msg)
+                ret = listener.func(msg, *listener.args)
             except:
                 try:
                     exceptions = listener.options['exceptions']
@@ -109,7 +109,7 @@ class Connection(object):
             return func
         return decorator
 
-    def register(self, types, func, **options):
+    def register(self, types, func, *args, **options):
         count = 0
         for name in self._getNames(types):
             listeners = self.listeners.setdefault(name, [])
@@ -117,7 +117,7 @@ class Connection(object):
                 if listener.func is func:
                     break
             else:
-                listeners.append(Listener(func, options))
+                listeners.append(Listener(func, args, options))
                 count += 1
         return count > 0
 

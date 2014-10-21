@@ -1,6 +1,6 @@
-from collections import namedtuple
 import os
 import time
+from collections import namedtuple
 
 config = namedtuple('config', 'TWS_HOST TWS_PORT TWS_CLID')(
     os.environ.get('TWS_HOST', '127.0.0.1'),

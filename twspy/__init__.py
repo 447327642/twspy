@@ -1,7 +1,8 @@
 from __future__ import print_function
-from collections import namedtuple
+
 import inspect
 import sys
+from collections import namedtuple
 
 from twspy.ib.EClientSocket import EClientSocket
 from twspy.ib.EWrapper import EWrapper

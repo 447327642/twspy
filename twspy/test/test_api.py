@@ -4,6 +4,7 @@ from twspy import Connection, message
 
 from .support import config, sleep_until
 
+
 @pytest.fixture
 def con(request):
     con = Connection(*config)

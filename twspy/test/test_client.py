@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 import collections
 import inspect
 import sys
@@ -8,6 +9,7 @@ from twspy.ib.EWrapper import EWrapper
 from twspy.ib.ExecutionFilter import ExecutionFilter
 
 from .support import config, sleep_until
+
 
 def test_client():
     functions = {}

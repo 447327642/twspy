@@ -115,7 +115,7 @@ def test_exception_in_handler_register(con):
         errors.append(msg)
 
     con.register('error', error)
-    for options in [{}, {'exceptions': 'raise'}, {'exceptions': 123}]:
+    for options in [{}, {'exceptions': 'raise'}]:
         seen = []
         errors = []
         con.register('nextValidId', callback, **options)

@@ -8,6 +8,8 @@ from collections import namedtuple
 from twspy.ib.EClientSocket import EClientSocket
 from twspy.ib.EWrapper import EWrapper
 
+sentinel = object()
+
 predicate = inspect.ismethod if sys.version_info[0] < 3 else inspect.isfunction
 functions = {name: inspect.getargspec(func).args[1:] for name, func
              in inspect.getmembers(EWrapper, predicate)}
@@ -46,13 +48,17 @@ class Dispatcher(EWrapper):
                 ret = listener.func(msg, *listener.args)
             except Exception:
                 traceback.print_exc()
-                exceptions = listener.options.get('exceptions', None)
-                if exceptions is None:
+                exceptions = listener.options.get('exceptions', sentinel)
+                if exceptions is sentinel:
                     exceptions = self.con.options.get('exceptions', 'raise')
                 if exceptions == 'unregister':
                     self.con.unregister(name, listener.func)
-                elif exceptions != 'pass':
+                elif exceptions == 'raise':
                     raise
+                elif exceptions == 'pass':
+                    pass
+                else:
+                    assert False, exceptions
             else:
                 if ret is not None:
                     msg = ret

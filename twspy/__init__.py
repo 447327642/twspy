@@ -23,24 +23,26 @@ Listener = namedtuple('Listener', 'func args options')
 
 class Dispatcher(EWrapper):
     def __init__(self, dispatch):
-        self.dispatch = dispatch
+        self._dispatch = dispatch
 
     def make(name, spec):
         def func(self, *args):
-            self.dispatch(name, args)
+            self._dispatch(name, args)
         return func
 
     for name, value in messages.items():
         locals()[name] = make(name, value._fields)
 
+    del make, name, value
+
     def error(self, *args):
-        self.dispatch('error', (None,) * (3 - len(args)) + args)
+        self._dispatch('error', (None,) * (3 - len(args)) + args)
 
 
 class Connection(object):
     def __init__(self, host='localhost', port=7496, clientId=0, **options):
         self.host, self.port, self.clientId = host, port, clientId
-        self.client = EClientSocket(Dispatcher(self.dispatch))
+        self.client = EClientSocket(Dispatcher(self._dispatch))
         self.listeners = {}
         self.options = options
 
@@ -54,15 +56,12 @@ class Connection(object):
             return True
         return False
 
-    def dispatch(self, name, args):
+    def _dispatch(self, name, args):
         try:
             listeners = self.listeners[name]
         except KeyError:
             return
         msg = messages[name]._make(args)
-        self._dispatch(name, msg, listeners)
-
-    def _dispatch(self, name, msg, listeners):
         for listener in listeners:
             try:
                 ret = listener.func(msg, *listener.args)

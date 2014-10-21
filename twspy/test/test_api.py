@@ -11,6 +11,11 @@ def con(request):
     request.addfinalizer(lambda: con.disconnect())
     return con
 
+def test_dispatcher():
+    from twspy import Dispatcher
+    from twspy.ib.EWrapper import EWrapper
+    assert set(dir(Dispatcher)) - set(dir(EWrapper)) == set()
+
 def test_constructor():
     assert Connection() is not None
     assert Connection(clientId=0) is not None

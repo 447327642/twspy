@@ -1,6 +1,6 @@
 import pytest
 
-from twspy import Connection, message
+from twspy import Connection
 
 from .support import config, sleep_until
 
@@ -26,24 +26,26 @@ def test_constructor():
 def test_register():
     def callback(msg): pass
     con = Connection()
-    for type_ in [message.nextValidId, 'nextValidId']:
-        with pytest.raises(ValueError):
-            con.unregister(type_, callback)
-        con.register(type_, callback)
-        with pytest.raises(ValueError):
-            con.register(type_, callback)
-        assert callback in con.getListeners(type_)
-        con.unregister(type_, callback)
-        with pytest.raises(ValueError):
-            con.unregister(type_, callback)
 
+    with pytest.raises(ValueError):
+        con.unregister('nextValidId', callback)
+    con.register('nextValidId', callback)
+    with pytest.raises(ValueError):
+        con.register('nextValidId', callback)
+    assert callback in con.getListeners('nextValidId')
+    con.unregister('nextValidId', callback)
+    with pytest.raises(ValueError):
+        con.unregister('nextValidId', callback)
+
+    with pytest.raises(KeyError):
+        con.getListeners(123)
     for func in [con.register, con.unregister]:
-        with pytest.raises(TypeError):
+        with pytest.raises(KeyError):
             func(123, callback)
-        with pytest.raises(TypeError):
-            func('nextValidId', 'test')
         with pytest.raises(KeyError):
             func('NextValidId', callback)
+        with pytest.raises(TypeError):
+            func('nextValidId', 'test')
 
 def test_decorator():
     con = Connection()

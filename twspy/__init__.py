@@ -17,8 +17,6 @@ messages = {}
 for name, args in functions.items():
     messages[name] = namedtuple(name, args)
 
-message = type('message', (object,), messages)
-
 Listener = namedtuple('Listener', 'func args options')
 
 
@@ -81,31 +79,21 @@ class Connection(object):
                 if ret is not None:
                     msg = ret
 
-    @staticmethod
-    def _getName(type_):
-        if isinstance(type_, type):
-            name = type_.__name__
-        elif isinstance(type_, str):
-            name = type_
-        else:
-            raise TypeError(type_)
+    def getListeners(self, name):
         if name not in messages:
             raise KeyError(name)
-        return name
-
-    def getListeners(self, type_):
-        name = self._getName(type_)
         return [listener.func for listener in self.listeners.get(name, [])]
 
-    def listener(self, *types, **options):
+    def listener(self, *names, **options):
         def decorator(func):
-            for type_ in types:
-                self.register(type_, func, **options)
+            for name in names:
+                self.register(name, func, **options)
             return func
         return decorator
 
-    def register(self, type_, func, *args, **options):
-        name = self._getName(type_)
+    def register(self, name, func, *args, **options):
+        if name not in messages:
+            raise KeyError(name)
         if not callable(func):
             raise TypeError(func)
         listeners = self.listeners.setdefault(name, [])
@@ -114,8 +102,9 @@ class Connection(object):
                 raise ValueError(name, func)
         listeners.append(Listener(func, args, options))
 
-    def unregister(self, type_, func):
-        name = self._getName(type_)
+    def unregister(self, name, func):
+        if name not in messages:
+            raise KeyError(name)
         if not callable(func):
             raise TypeError(func)
         listeners = self.listeners.get(name, [])
@@ -125,16 +114,16 @@ class Connection(object):
         raise ValueError(name, func)
 
     def registerAll(self, func):
-        for type_ in messages.keys():
+        for name in messages.keys():
             try:
-                self.register(type_, func)
+                self.register(name, func)
             except ValueError:
                 pass
 
     def unregisterAll(self, func):
-        for type_ in messages.keys():
+        for name in messages.keys():
             try:
-                self.unregister(type_, func)
+                self.unregister(name, func)
             except ValueError:
                 pass
 

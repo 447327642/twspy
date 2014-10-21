@@ -51,7 +51,7 @@ class Connection(object):
         if not self.client.isConnected():
             raise IOError
 
-    def disconnect(self):
+    def close(self):
         self.client.eDisconnect()
 
     def _dispatch(self, name, args):

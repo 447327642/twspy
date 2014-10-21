@@ -8,7 +8,7 @@ from .support import config, sleep_until
 def con(request):
     con = Connection(*config)
     con.enableLogging()
-    request.addfinalizer(lambda: con.disconnect())
+    request.addfinalizer(lambda: con.close())
     return con
 
 def test_dispatcher():
@@ -70,7 +70,7 @@ def test_basic(con, capsys):
     assert seen['currentTime'].time > 0
 
     assert con.isConnected()
-    con.disconnect()
+    con.close()
     assert not con.isConnected()
     con.enableLogging(False)
 
@@ -86,7 +86,7 @@ def test_connect_multiple(con):
         con.connect()
         assert con.isConnected()
         assert sleep_until(lambda: seen, 1.0)
-        con.disconnect()
+        con.close()
         assert not con.isConnected()
 
 def test_modify_msg(con):

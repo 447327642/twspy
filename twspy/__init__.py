@@ -89,7 +89,7 @@ class Connection(object):
         else:
             name = type_
         if name not in messages:
-            raise ValueError(type_)
+            raise KeyError(name)
         return name
 
     def getListeners(self, type_):
@@ -105,6 +105,8 @@ class Connection(object):
 
     def register(self, type_, func, *args, **options):
         name = self._getName(type_)
+        if not callable(func):
+            raise TypeError(func)
         listeners = self.listeners.setdefault(name, [])
         for listener in listeners:
             if listener.func is func:
@@ -113,6 +115,8 @@ class Connection(object):
 
     def unregister(self, type_, func):
         name = self._getName(type_)
+        if not callable(func):
+            raise TypeError(func)
         listeners = self.listeners.get(name, [])
         for listener in listeners:
             if listener.func is func:

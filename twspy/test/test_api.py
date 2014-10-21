@@ -37,10 +37,12 @@ def test_register():
             con.unregister(type_, callback)
 
     for func in [con.register, con.unregister]:
-        with pytest.raises(KeyError):
-            func('NextValidId', callback)
+        with pytest.raises(TypeError):
+            func(123, callback)
         with pytest.raises(TypeError):
             func('nextValidId', 'test')
+        with pytest.raises(KeyError):
+            func('NextValidId', callback)
 
 def test_decorator():
     con = Connection()

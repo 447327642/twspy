@@ -82,10 +82,12 @@ class Connection(object):
 
     @staticmethod
     def _getName(type_):
-        if not isinstance(type_, str):
+        if isinstance(type_, type):
             name = type_.__name__
-        else:
+        elif isinstance(type_, str):
             name = type_
+        else:
+            raise TypeError(type_)
         if name not in messages:
             raise KeyError(name)
         return name

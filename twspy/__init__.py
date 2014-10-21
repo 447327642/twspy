@@ -103,6 +103,12 @@ class Connection(object):
         name = self._getName(type_)
         return [listener.func for listener in self.listeners.get(name, [])]
 
+    def listener(self, types, **options):
+        def decorator(func):
+            self.register(types, func, **options)
+            return func
+        return decorator
+
     def register(self, types, func, **options):
         count = 0
         for name in self._getNames(types):

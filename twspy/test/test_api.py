@@ -34,6 +34,13 @@ def test_register():
     with pytest.raises(ValueError):
         con.register('NextValidId', callback)
 
+def test_decorator():
+    con = Connection()
+    @con.listener('nextValidId', exceptions='raise')
+    def callback(msg):
+        pass
+    assert callback in con.getListeners('nextValidId')
+
 def test_attributes_before_connect():
     con = Connection()
     assert not con.isConnected()

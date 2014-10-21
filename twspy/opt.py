@@ -41,12 +41,18 @@ class ibConnection(Connection):
         self._dispatch(name, msg, listeners)
 
     @staticmethod
-    def getName(arg):
+    def _getName(arg):
         if not isinstance(arg, str):
             name = arg.__name__
         else:
             name = arg
         return name
+
+    def register(self, func, *types):
+        return Connection.register(self, types, func)
+
+    def unregister(self, func, *types):
+        return Connection.unregister(self, types, func)
 
     def registerAll(self, func):
         return self.register(func, *(upper(name) for name in messages.keys()))

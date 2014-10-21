@@ -36,9 +36,9 @@ def con(request):
 
 def test_accept_names(con):
     def callback(msg): pass
-    for arg in ['NextValidId', 'NEXTVALIDID', 'INVALID NAME']:
-        assert con.register(callback, arg)
-        assert con.unregister(callback, arg)
+    for type_ in ['NextValidId', 'NEXTVALIDID', 'INVALID NAME']:
+        assert con.register(callback, type_)
+        assert con.unregister(callback, type_)
 
 def test_basic(con):
     seen = {}
@@ -57,8 +57,8 @@ def test_basic(con):
 def test_which_names_work(con):
     from functools import partial
     seen = []
-    def callback(arg, msg):
-        seen.append(arg)
+    def callback(name, msg):
+        seen.append(name)
 
     for name in ['nextValidId', 'NextValidId', 'NEXTVALIDID']:
         assert con.register(partial(callback, name), name)

@@ -20,15 +20,19 @@ def test_constructor():
 def test_register():
     def callback(msg): pass
     con = Connection()
-    for arg in [message.nextValidId, 'nextValidId']:
-        assert not con.unregister(callback, arg)
-        assert con.register(callback, arg)
-        assert not con.register(callback, arg)
-        assert callback in con.getListeners(arg)
-        assert con.unregister(callback, arg)
-        assert not con.unregister(callback, arg)
+    for type_ in [message.nextValidId, 'nextValidId']:
+        assert not con.unregister(type_, callback)
+        assert con.register(type_, callback)
+        assert not con.register(type_, callback)
+        assert callback in con.getListeners(type_)
+        assert con.unregister(type_, callback)
+        assert not con.unregister(type_, callback)
+
+    assert con.register([message.nextValidId, 'nextValidId', 'error'], callback)
+    assert con.unregister((message.nextValidId, 'nextValidId', 'error'), callback)
+
     with pytest.raises(ValueError):
-        con.register(callback, 'NextValidId')
+        con.register('NextValidId', callback)
 
 def test_attributes_before_connect():
     con = Connection()
@@ -60,7 +64,7 @@ def test_basic(con, capsys):
 def test_connect_multiple(con):
     def callback(msg):
         seen.append(True)
-    assert con.register(callback, 'nextValidId')
+    assert con.register('nextValidId', callback)
     for i in range(2):
         seen = []
         assert con.connect()
@@ -77,8 +81,8 @@ def test_modify_msg(con):
         seen.append(True)
 
     seen = []
-    assert con.register(callback1, 'nextValidId')
-    assert con.register(callback2, 'nextValidId')
+    assert con.register('nextValidId', callback1)
+    assert con.register('nextValidId', callback2)
     assert con.connect()
     assert sleep_until(lambda: seen, 1.0)
 
@@ -89,15 +93,15 @@ def test_exception_in_handler(con):
 
     for options in [{}, {'exceptions': 'raise'}]:
         seen = []
-        assert con.register(callback, 'nextValidId', **options)
+        assert con.register('nextValidId', callback, **options)
         assert con.connect()
         assert sleep_until(lambda: seen, 1.0)
         assert not con.isConnected()
         assert not con.disconnect()
-        assert con.unregister(callback, 'nextValidId')
+        assert con.unregister('nextValidId', callback)
 
     seen = []
-    assert con.register(callback, 'nextValidId', exceptions='unregister')
+    assert con.register('nextValidId', callback, exceptions='unregister')
     assert con.connect()
     assert sleep_until(lambda: seen, 1.0)
     assert con.isConnected()
@@ -115,8 +119,8 @@ def test_historical_data(con):
         if msg.errorCode == 2105:
             seen.append(msg)
 
-    assert con.register(callback, 'historicalData')
-    assert con.register(error, 'error')
+    assert con.register('historicalData', callback)
+    assert con.register('error', error)
     assert con.connect()
 
     c = Contract()
@@ -137,7 +141,7 @@ def test_failing_request(con):
     seen = []
     def callback(msg):
         seen.append(msg)
-    con.register(callback, 'error')
+    con.register('error', callback)
     assert con.connect()
     con.m_dos.close()
     con.reqScannerParameters()

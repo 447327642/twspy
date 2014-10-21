@@ -72,7 +72,7 @@ class Connection(object):
                 except KeyError:
                     exceptions = self.options.get('exceptions', 'raise')
                 if exceptions == 'unregister':
-                    self.unregister(listener.func, name)
+                    self.unregister(name, listener.func)
                 elif exceptions == 'raise':
                     raise
                 elif exceptions == 'pass':
@@ -84,23 +84,28 @@ class Connection(object):
                     msg = ret
 
     @staticmethod
-    def getName(arg):
-        if not isinstance(arg, str):
-            name = arg.__name__
+    def _getName(type_):
+        if not isinstance(type_, str):
+            name = type_.__name__
         else:
-            name = arg
+            name = type_
         if name not in messages:
-            raise ValueError(arg)
+            raise ValueError(type_)
         return name
 
-    def getListeners(self, arg):
-        name = self.getName(arg)
+    @classmethod
+    def _getNames(cls, types):
+        if isinstance(types, (str, type)):
+            types = (types,)
+        return [cls._getName(type_) for type_ in types]
+
+    def getListeners(self, type_):
+        name = self._getName(type_)
         return [listener.func for listener in self.listeners.get(name, [])]
 
-    def register(self, func, *args, **options):
+    def register(self, types, func, **options):
         count = 0
-        for arg in args:
-            name = self.getName(arg)
+        for name in self._getNames(types):
             listeners = self.listeners.setdefault(name, [])
             for listener in listeners:
                 if listener.func is func:
@@ -110,10 +115,9 @@ class Connection(object):
                 count += 1
         return count > 0
 
-    def unregister(self, func, *args):
+    def unregister(self, types, func):
         count = 0
-        for arg in args:
-            name = self.getName(arg)
+        for name in self._getNames(types):
             try:
                 listeners = self.listeners[name]
             except KeyError:
@@ -126,10 +130,10 @@ class Connection(object):
         return count > 0
 
     def registerAll(self, func):
-        return self.register(func, *messages.keys())
+        return self.register(messages.keys(), func)
 
     def unregisterAll(self, func):
-        return self.unregister(func, *messages.keys())
+        return self.unregister(messages.keys(), func)
 
     def enableLogging(self, enable=True):
         if enable:

@@ -2,7 +2,7 @@ import pytest
 
 from twspy import Connection
 
-from .support import config, sleep_until
+from .support import config, HAS_TWS, sleep_until
 
 
 @pytest.fixture
@@ -13,201 +13,194 @@ def con(request):
     return con
 
 
-def test_version():
-    import re
-    from twspy import __version__
-    assert re.match('[0-9]+\.[0-9]+\.[0-9]+', __version__)
+class TestAPIBasic:
+    def test_version(self):
+        import re
+        from twspy import __version__
+        assert re.match('[0-9]+\.[0-9]+\.[0-9]+', __version__)
 
+    def test_dispatcher(self):
+        from twspy import Dispatcher
+        from twspy.ib.EWrapper import EWrapper
+        assert set(dir(Dispatcher)) - set(dir(EWrapper)) == {'_dispatch'}
 
-def test_dispatcher():
-    from twspy import Dispatcher
-    from twspy.ib.EWrapper import EWrapper
-    assert set(dir(Dispatcher)) - set(dir(EWrapper)) == {'_dispatch'}
+    def test_register(self, con):
+        callback = lambda msg: None
 
-
-def test_register(con):
-    callback = lambda msg: None
-
-    with pytest.raises(ValueError):
-        con.unregister('nextValidId', callback)
-    con.register('nextValidId', callback)
-    with pytest.raises(ValueError):
+        with pytest.raises(ValueError):
+            con.unregister('nextValidId', callback)
         con.register('nextValidId', callback)
-    assert callback in con.getListeners('nextValidId')
-    con.unregister('nextValidId', callback)
-    with pytest.raises(ValueError):
+        with pytest.raises(ValueError):
+            con.register('nextValidId', callback)
+        assert callback in con.getListeners('nextValidId')
         con.unregister('nextValidId', callback)
+        with pytest.raises(ValueError):
+            con.unregister('nextValidId', callback)
 
-    with pytest.raises(KeyError):
-        con.getListeners(123)
-    for func in [con.register, con.unregister]:
         with pytest.raises(KeyError):
-            func(123, callback)
-        with pytest.raises(KeyError):
-            func('NextValidId', callback)
-        with pytest.raises(TypeError):
-            func('nextValidId', 'test')
+            con.getListeners(123)
+        for func in [con.register, con.unregister]:
+            with pytest.raises(KeyError):
+                func(123, callback)
+            with pytest.raises(KeyError):
+                func('NextValidId', callback)
+            with pytest.raises(TypeError):
+                func('nextValidId', 'test')
+
+    def test_decorator(self, con):
+        @con.listener('nextValidId', 'openOrderEnd', exceptions='raise')
+        def callback(msg):
+            pass
+        assert callback in con.getListeners('nextValidId')
+        assert callback in con.getListeners('openOrderEnd')
 
 
-def test_decorator(con):
-    @con.listener('nextValidId', 'openOrderEnd', exceptions='raise')
-    def callback(msg):
-        pass
-    assert callback in con.getListeners('nextValidId')
-    assert callback in con.getListeners('openOrderEnd')
+@pytest.mark.xfail(not HAS_TWS, reason="no TWS", raises=IOError)
+class TestAPIConnecting:
+    def test_basic(self, con, capsys):
+        def callback(msg):
+            seen[type(msg).__name__] = msg
+        seen = {}
 
+        con.registerAll(callback)
 
-def test_basic(con, capsys):
-    def callback(msg):
-        seen[type(msg).__name__] = msg
-    seen = {}
-
-    con.registerAll(callback)
-
-    assert not con.isConnected()
-    con.connect()
-    assert sleep_until(lambda: 'nextValidId' in seen, 1.0)
-    assert seen['nextValidId'].orderId > 0
-
-    con.reqCurrentTime()
-    assert sleep_until(lambda: 'currentTime' in seen, 1.0)
-    assert seen['currentTime'].time > 0
-
-    assert con.isConnected()
-    con.close()
-    assert not con.isConnected()
-    con.enableLogging(False)
-
-    out, err = capsys.readouterr()
-    assert 'currentTime' in err
-
-
-def test_connect_multiple(con):
-    def callback(msg):
-        seen.append(True)
-    con.register('nextValidId', callback)
-    for i in range(2):
-        seen = []
+        assert not con.isConnected()
         con.connect()
+        assert sleep_until(lambda: 'nextValidId' in seen, 1.0)
+        assert seen['nextValidId'].orderId > 0
+
+        con.reqCurrentTime()
+        assert sleep_until(lambda: 'currentTime' in seen, 1.0)
+        assert seen['currentTime'].time > 0
+
         assert con.isConnected()
-        assert sleep_until(lambda: seen, 1.0)
         con.close()
         assert not con.isConnected()
+        con.enableLogging(False)
 
+        out, err = capsys.readouterr()
+        assert 'currentTime' in err
 
-def test_modify_msg(con):
-    def callback1(msg):
-        return "test"
+    def test_connect_multiple(self, con):
+        def callback(msg):
+            seen.append(True)
+        con.register('nextValidId', callback)
+        for i in range(2):
+            seen = []
+            con.connect()
+            assert con.isConnected()
+            assert sleep_until(lambda: seen, 1.0)
+            con.close()
+            assert not con.isConnected()
 
-    def callback2(msg):
-        assert msg == "test"
-        seen.append(True)
+    def test_modify_msg(self, con):
+        def callback1(msg):
+            return "test"
 
-    seen = []
-    con.register('nextValidId', callback1)
-    con.register('nextValidId', callback2)
-    con.connect()
-    assert sleep_until(lambda: seen, 1.0)
-
-
-def test_exception_in_handler_register(con):
-    def callback(msg):
-        seen.append(True)
-        raise Exception('test')
-
-    def error(msg):
-        errors.append(msg)
-
-    con.register('error', error)
-    for options in [{}, {'exceptions': 'raise'}]:
-        seen = []
-        errors = []
-        con.register('nextValidId', callback, **options)
-        con.connect()
-        assert sleep_until(lambda: errors, 1.0)
-        assert type(errors[0].errorMsg) is Exception
-        assert str(errors[0].errorMsg) == 'test'
-        assert not con.isConnected()
-        con.unregister('nextValidId', callback)
-    con.unregister('error', error)
-
-    seen = []
-    con.register('nextValidId', callback, exceptions='unregister')
-    con.connect()
-    assert sleep_until(lambda: seen, 1.0)
-    assert con.isConnected()
-    assert callback not in con.getListeners('nextValidId')
-
-
-def test_exception_in_handler_constructor(request, capsys):
-    def callback(msg):
-        seen.append(True)
-        raise Exception('test')
-
-    seen = []
-    con = Connection(*config, exceptions='pass')
-    request.addfinalizer(lambda: con.close())
-    con.register('nextValidId', callback)
-    con.connect()
-    assert sleep_until(lambda: seen, 1.0)
-    assert con.isConnected()
-    assert callback in con.getListeners('nextValidId')
-
-    out, err = capsys.readouterr()
-    assert 'Traceback' in err
-    assert 'callback' in err
-
-
-def test_historical_data(con):
-    import time
-    from twspy.ib.Contract import Contract
-
-    def callback(msg):
-        if msg.date.startswith('finished'):
+        def callback2(msg):
+            assert msg == "test"
             seen.append(True)
 
-    def error(msg):
-        if msg.errorCode == 2105:
-            seen.append(msg)
+        seen = []
+        con.register('nextValidId', callback1)
+        con.register('nextValidId', callback2)
+        con.connect()
+        assert sleep_until(lambda: seen, 1.0)
 
-    seen = []
-    con.register('historicalData', callback)
-    con.register('error', error)
-    con.connect()
+    def test_exception_in_handler_register(self, con):
+        def callback(msg):
+            seen.append(True)
+            raise Exception('test')
 
-    c = Contract()
-    c.m_symbol = 'AAPL'
-    c.m_secType = 'STK'
-    c.m_exchange = 'SMART'
-    c.m_primaryExch = 'NYSE'
-    e = time.strftime('%Y%m%d %H:%M:%S')
-    con.reqHistoricalData(1, c, e, "5 D", "1 hour", "TRADES", 1, 1, None)
+        def error(msg):
+            errors.append(msg)
 
-    assert sleep_until(lambda: seen, 5.0)
-    if seen[0] is not True:
-        pytest.xfail(seen[0].errorMsg)
+        con.register('error', error)
+        for options in [{}, {'exceptions': 'raise'}]:
+            seen = []
+            errors = []
+            con.register('nextValidId', callback, **options)
+            con.connect()
+            assert sleep_until(lambda: errors, 1.0)
+            assert type(errors[0].errorMsg) is Exception
+            assert str(errors[0].errorMsg) == 'test'
+            assert not con.isConnected()
+            con.unregister('nextValidId', callback)
+        con.unregister('error', error)
 
+        seen = []
+        con.register('nextValidId', callback, exceptions='unregister')
+        con.connect()
+        assert sleep_until(lambda: seen, 1.0)
+        assert con.isConnected()
+        assert callback not in con.getListeners('nextValidId')
 
-def test_failing_request(con):
-    from twspy.ib.EClientErrors import EClientErrors
-    seen = []
-    callback = lambda msg: seen.append(msg)
-    con.register('error', callback)
-    con.connect()
-    con.m_dos.close()
-    con.reqScannerParameters()
-    expected = EClientErrors.FAIL_SEND_REQSCANNERPARAMETERS.m_errorCode
-    # reader thread might fail first, check all errors
-    for msg in seen:
-        if msg.errorCode == expected:
-            return
-    assert False
+    def test_exception_in_handler_constructor(self, request, capsys):
+        def callback(msg):
+            seen.append(True)
+            raise Exception('test')
 
+        seen = []
+        con = Connection(*config, exceptions='pass')
+        request.addfinalizer(lambda: con.close())
+        con.register('nextValidId', callback)
+        con.connect()
+        assert sleep_until(lambda: seen, 1.0)
+        assert con.isConnected()
+        assert callback in con.getListeners('nextValidId')
 
-def test_callback_extra_args(con):
-    seen = []
-    callback = lambda msg, arg: seen.append(arg)
-    con.register('nextValidId', callback, con)
-    con.connect()
-    assert sleep_until(lambda: seen, 1.0)
-    assert seen[0] is con
+        out, err = capsys.readouterr()
+        assert 'Traceback' in err
+        assert 'callback' in err
+
+    def test_historical_data(self, con):
+        import time
+        from twspy.ib.Contract import Contract
+
+        def callback(msg):
+            if msg.date.startswith('finished'):
+                seen.append(True)
+
+        def error(msg):
+            if msg.errorCode == 2105:
+                seen.append(msg)
+
+        seen = []
+        con.register('historicalData', callback)
+        con.register('error', error)
+        con.connect()
+
+        c = Contract()
+        c.m_symbol = 'AAPL'
+        c.m_secType = 'STK'
+        c.m_exchange = 'SMART'
+        c.m_primaryExch = 'NYSE'
+        e = time.strftime('%Y%m%d %H:%M:%S')
+        con.reqHistoricalData(1, c, e, "5 D", "1 hour", "TRADES", 1, 1, None)
+
+        assert sleep_until(lambda: seen, 5.0)
+        if seen[0] is not True:
+            pytest.xfail(seen[0].errorMsg)
+
+    def test_failing_request(self, con):
+        from twspy.ib.EClientErrors import EClientErrors
+        seen = []
+        callback = lambda msg: seen.append(msg)
+        con.register('error', callback)
+        con.connect()
+        con.m_dos.close()
+        con.reqScannerParameters()
+        expected = EClientErrors.FAIL_SEND_REQSCANNERPARAMETERS.m_errorCode
+        # reader thread might fail first, check all errors
+        for msg in seen:
+            if msg.errorCode == expected:
+                return
+        assert False
+
+    def test_callback_extra_args(self, con):
+        seen = []
+        callback = lambda msg, arg: seen.append(arg)
+        con.register('nextValidId', callback, con)
+        con.connect()
+        assert sleep_until(lambda: seen, 1.0)
+        assert seen[0] is con

@@ -4,13 +4,16 @@ import collections
 import inspect
 import sys
 
+import pytest
+
 from twspy.ib.EClientSocket import EClientSocket
 from twspy.ib.EWrapper import EWrapper
 from twspy.ib.ExecutionFilter import ExecutionFilter
 
-from .support import config, sleep_until
+from .support import config, HAS_TWS, sleep_until
 
 
+@pytest.mark.xfail(not HAS_TWS, reason="no TWS", raises=IOError)
 def test_client():
     functions = {}
     predicate = (inspect.ismethod if sys.version_info[0] < 3
@@ -35,7 +38,9 @@ def test_client():
 
     con = EClientSocket(MyWrapper())
     con.eConnect(*config)
-    assert con.isConnected()
+    if not con.isConnected():
+        raise IOError
+
     assert sleep_until(lambda: 'nextValidId' in seen, 1.0)
     assert seen['nextValidId']['orderId'] > 0
 

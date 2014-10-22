@@ -19,6 +19,12 @@ class TestBasic:
         from twspy import __version__
         assert re.match('[0-9]+\.[0-9]+\.[0-9]+', __version__)
 
+    def test_messages(self):
+        from twspy import messages
+        assert 'error_0' not in messages
+        assert 'nextValidId' in messages
+        assert issubclass(messages['error'], tuple)
+
     def test_dispatcher(self):
         from twspy import Dispatcher
         from twspy.ib.EWrapper import EWrapper

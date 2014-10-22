@@ -1,6 +1,6 @@
 News
 ----
-* master
+* 0.1.1
 
   * Packaging fixes
 

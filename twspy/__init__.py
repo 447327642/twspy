@@ -11,9 +11,9 @@ from .ib.EWrapper import EWrapper
 
 sentinel = object()
 
-predicate = inspect.ismethod if sys.version_info[0] < 3 else inspect.isfunction
-functions = {name: inspect.getargspec(func).args[1:] for name, func
-             in inspect.getmembers(EWrapper, predicate)}
+functions = {name: inspect.getargspec(func).args[1:]
+             for name, func in inspect.getmembers(EWrapper, callable)
+             if not name.startswith('error') and not name.startswith('_')}
 functions['error'] = ['id', 'errorCode', 'errorMsg']
 
 messages = {name: namedtuple(name, args) for name, args in functions.items()}
@@ -37,6 +37,8 @@ class Dispatcher(EWrapper):
 
     def error(self, *args):
         self._dispatch('error', (None,) * (3 - len(args)) + args)
+
+    error_0 = error_1 = None
 
     def _dispatch(self, name, args):
         try:

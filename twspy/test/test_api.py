@@ -24,7 +24,14 @@ class TestAPIBasic:
         from twspy.ib.EWrapper import EWrapper
         assert set(dir(Dispatcher)) - set(dir(EWrapper)) == {'_dispatch'}
 
-    def test_register(self, con):
+    def test_register_decorator(self, con):
+        @con.listener('nextValidId', 'openOrderEnd', exceptions='raise')
+        def callback(msg):
+            pass
+        assert callback in con.getListeners('nextValidId')
+        assert callback in con.getListeners('openOrderEnd')
+
+    def test_register_unregister(self, con):
         callback = lambda msg: None
 
         with pytest.raises(ValueError):
@@ -47,12 +54,43 @@ class TestAPIBasic:
             with pytest.raises(TypeError):
                 func('nextValidId', 'test')
 
-    def test_decorator(self, con):
-        @con.listener('nextValidId', 'openOrderEnd', exceptions='raise')
-        def callback(msg):
-            pass
-        assert callback in con.getListeners('nextValidId')
-        assert callback in con.getListeners('openOrderEnd')
+    def test_register_extra_args(self, con):
+        seen = []
+        callback = lambda msg, arg: seen.append(arg)
+        con.register('nextValidId', callback, con)
+        con.client.wrapper().nextValidId(42)
+        assert sleep_until(lambda: seen, 1.0)
+        assert seen[0] is con
+
+    def test_modify_msg(self, con):
+        def callback1(msg):
+            return "test"
+
+        def callback2(msg):
+            assert msg == "test"
+            seen.append(True)
+
+        seen = []
+        con.register('nextValidId', callback1)
+        con.register('nextValidId', callback2)
+        con.client.wrapper().nextValidId(42)
+        assert sleep_until(lambda: seen, 1.0)
+
+    def test_failing_request(self, con):
+        from twspy.ib.EClientErrors import EClientErrors
+        seen = []
+        callback = lambda msg: seen.append(msg)
+        con.register('error', callback)
+        # fake a connection
+        con.client.m_connected = True
+        con.client.m_serverVersion = 42
+        con.reqScannerParameters()
+        expected = EClientErrors.FAIL_SEND_REQSCANNERPARAMETERS.m_errorCode
+        # reader thread might fail first, check all errors
+        for msg in seen:
+            if msg.errorCode == expected:
+                return
+        assert False, seen
 
 
 @pytest.mark.xfail(not HAS_TWS, reason="no TWS", raises=IOError)
@@ -92,20 +130,6 @@ class TestAPIConnecting:
             assert sleep_until(lambda: seen, 1.0)
             con.close()
             assert not con.isConnected()
-
-    def test_modify_msg(self, con):
-        def callback1(msg):
-            return "test"
-
-        def callback2(msg):
-            assert msg == "test"
-            seen.append(True)
-
-        seen = []
-        con.register('nextValidId', callback1)
-        con.register('nextValidId', callback2)
-        con.connect()
-        assert sleep_until(lambda: seen, 1.0)
 
     def test_exception_in_handler_register(self, con):
         def callback(msg):
@@ -181,26 +205,3 @@ class TestAPIConnecting:
         assert sleep_until(lambda: seen, 5.0)
         if seen[0] is not True:
             pytest.xfail(seen[0].errorMsg)
-
-    def test_failing_request(self, con):
-        from twspy.ib.EClientErrors import EClientErrors
-        seen = []
-        callback = lambda msg: seen.append(msg)
-        con.register('error', callback)
-        con.connect()
-        con.m_dos.close()
-        con.reqScannerParameters()
-        expected = EClientErrors.FAIL_SEND_REQSCANNERPARAMETERS.m_errorCode
-        # reader thread might fail first, check all errors
-        for msg in seen:
-            if msg.errorCode == expected:
-                return
-        assert False
-
-    def test_callback_extra_args(self, con):
-        seen = []
-        callback = lambda msg, arg: seen.append(arg)
-        con.register('nextValidId', callback, con)
-        con.connect()
-        assert sleep_until(lambda: seen, 1.0)
-        assert seen[0] is con

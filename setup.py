@@ -1,8 +1,10 @@
 from setuptools import find_packages, setup
 
+exec(open('twspy/_version.py').read())
+
 setup(
     name='twspy',
-    version='0.1.0',
+    version=__version__,
 
     description='Python API to Interactive Brokers TWS',
     long_description=open('README.rst').read(),

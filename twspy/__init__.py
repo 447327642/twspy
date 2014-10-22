@@ -5,8 +5,9 @@ import sys
 import traceback
 from collections import namedtuple
 
-from twspy.ib.EClientSocket import EClientSocket
-from twspy.ib.EWrapper import EWrapper
+from ._version import __version__
+from .ib.EClientSocket import EClientSocket
+from .ib.EWrapper import EWrapper
 
 sentinel = object()
 

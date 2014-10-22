@@ -7,7 +7,7 @@ long_description = '\n'.join([open('README.rst').read(),
 
 setup(
     name='twspy',
-    version=__version__,
+    version=__version__,  # noqa
 
     description='Python API to Interactive Brokers TWS',
     long_description=long_description,

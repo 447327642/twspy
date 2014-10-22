@@ -1,4 +1,5 @@
 # http://svn.python.org/projects/sandbox/trunk/overload/overloading.py
+# flake8: noqa
 
 """Dynamically overloaded functions.
 

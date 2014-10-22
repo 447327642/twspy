@@ -1,4 +1,5 @@
 # http://svn.python.org/projects/sandbox/trunk/overload/test_overloading.py
+# flake8: noqa
 
 """Unit tests for overloading.py."""
 

@@ -5,7 +5,7 @@ import sys
 import traceback
 from collections import namedtuple
 
-from ._version import __version__
+from ._version import __version__  # noqa
 from .ib.EClientSocket import EClientSocket
 from .ib.EWrapper import EWrapper
 
@@ -80,11 +80,6 @@ class Connection(object):
     def close(self):
         self.client.eDisconnect()
 
-    def getListeners(self, name):
-        if name not in messages:
-            raise KeyError(name)
-        return [listener.func for listener in self.listeners.get(name, [])]
-
     def listener(self, *names, **options):
         def decorator(func):
             for name in names:
@@ -113,6 +108,11 @@ class Connection(object):
             if listener.func is func:
                 return listeners.remove(listener)
         raise ValueError(name, func)
+
+    def getListeners(self, name):
+        if name not in messages:
+            raise KeyError(name)
+        return [listener.func for listener in self.listeners.get(name, [])]
 
     def registerAll(self, func):
         for name in messages.keys():

@@ -8,6 +8,7 @@ config = namedtuple('config', 'TWS_HOST TWS_PORT TWS_CLID')(
     int(os.environ.get('TWS_CLID', 0)),
 )
 
+
 def sleep_until(func, secs):
     start = time.time()
     while not func():

@@ -13,7 +13,8 @@ from .support import config, sleep_until
 
 def test_client():
     functions = {}
-    predicate = inspect.ismethod if sys.version_info[0] < 3 else inspect.isfunction
+    predicate = (inspect.ismethod if sys.version_info[0] < 3
+                 else inspect.isfunction)
     for name, func in inspect.getmembers(EWrapper, predicate):
         functions[name] = inspect.getargspec(func).args[1:]
     functions['error'] = ['id', 'errorCode', 'errorMsg']

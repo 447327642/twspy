@@ -3,6 +3,7 @@ def test_version():
     from twspy.ib import __version__
     assert re.match('[0-9]{3}\.[0-9]{2}$', __version__)
 
+
 def test_builder():
     from twspy.ib.Builder import Builder
     b = Builder()
@@ -12,6 +13,7 @@ def test_builder():
     b.send(True)
     assert b.getBytes() == b"42\x00test\x00-0.5\x001\x00"
 
+
 def test_order_state():
     from twspy.ib.OrderState import OrderState
     o1 = OrderState()
@@ -19,6 +21,7 @@ def test_order_state():
     assert o1 == o2
     o2.m_commission = 0.5
     assert o1 != o2
+
 
 class TestUtil:
     def test_string_compare(self):

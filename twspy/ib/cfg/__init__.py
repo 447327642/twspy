@@ -8,4 +8,5 @@ moduleOutputSubs = [
     (r'(\W)self ==', r'\1self is'),
     (r'== None(\W)', r'is None\1'),
     (r'!= None(\W)', r'is not None\1'),
+    (r'\.get\((.*?)\)', r'[\1]'),
 ]

@@ -38,24 +38,17 @@ class TestUtil:
     def test_vector_equals_unordered(self):
         from twspy.lang.java import Vector
         from twspy.ib.Util import Util
-        a = Vector()
-        b = Vector()
-        c = Vector()
-        a.add(42*100)
-        a.add(2)
-        a.add(5)
-        a.add(1)
-        b.add(1)
-        b.add(2)
-        b.add(5)
-        b.add(42*100)
-        c.add(1)
-        c.add(2)
+        a = [42*100, 2, 5, 1]
+        b = [1, 2, 5, 42*100]
+        c = [1, 2]
         assert Util.VectorEqualsUnordered(a, a)
+        assert Util.VectorEqualsUnordered(a, Vector(a))
         assert Util.VectorEqualsUnordered(a, b)
+        assert Util.VectorEqualsUnordered(a, Vector(b))
         assert Util.VectorEqualsUnordered(b, a)
         assert not Util.VectorEqualsUnordered(a, c)
         assert not Util.VectorEqualsUnordered(b, c)
+        assert not Util.VectorEqualsUnordered(b, Vector(c))
 
     def test_max_string(self):
         from twspy.lang.java import Integer, Double

@@ -41,13 +41,13 @@ class Util(object):
         matchedRhsElems = [None] * rhsCount
         lhsIdx = 0
         while lhsIdx < lhsCount:
-            lhsElem = lhs.get(lhsIdx)
+            lhsElem = lhs[lhsIdx]
             rhsIdx = 0
             while rhsIdx < rhsCount:
                 if matchedRhsElems[rhsIdx]:
                     rhsIdx += 1
                     continue 
-                if lhsElem == rhs.get(rhsIdx):
+                if lhsElem == rhs[rhsIdx]:
                     matchedRhsElems[rhsIdx] = True
                     break
                 rhsIdx += 1

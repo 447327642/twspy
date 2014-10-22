@@ -466,7 +466,7 @@ class EClientSocket(object):
                 if scannerSubscriptionOptionsCount > 0:
                     i = 0
                     while i < scannerSubscriptionOptionsCount:
-                        tagValue = scannerSubscriptionOptions.get(i)
+                        tagValue = scannerSubscriptionOptions[i]
                         scannerSubscriptionOptionsStr.append(tagValue.m_tag)
                         scannerSubscriptionOptionsStr.append("=")
                         scannerSubscriptionOptionsStr.append(tagValue.m_value)
@@ -530,7 +530,7 @@ class EClientSocket(object):
                     comboLeg = None
                     i = 0
                     while i < len(contract.m_comboLegs):
-                        comboLeg = contract.m_comboLegs.get(i)
+                        comboLeg = contract.m_comboLegs[i]
                         self.send(comboLeg.m_conId)
                         self.send(comboLeg.m_ratio)
                         self.send(comboLeg.m_action)
@@ -563,7 +563,7 @@ class EClientSocket(object):
                 if mktDataOptionsCount > 0:
                     i = 0
                     while i < mktDataOptionsCount:
-                        tagValue = mktDataOptions.get(i)
+                        tagValue = mktDataOptions[i]
                         mktDataOptionsStr.append(tagValue.m_tag)
                         mktDataOptionsStr.append("=")
                         mktDataOptionsStr.append(tagValue.m_value)
@@ -666,7 +666,7 @@ class EClientSocket(object):
                     comboLeg = None
                     i = 0
                     while i < len(contract.m_comboLegs):
-                        comboLeg = contract.m_comboLegs.get(i)
+                        comboLeg = contract.m_comboLegs[i]
                         self.send(comboLeg.m_conId)
                         self.send(comboLeg.m_ratio)
                         self.send(comboLeg.m_action)
@@ -679,7 +679,7 @@ class EClientSocket(object):
                 if chartOptionsCount > 0:
                     i = 0
                     while i < chartOptionsCount:
-                        tagValue = chartOptions.get(i)
+                        tagValue = chartOptions[i]
                         chartOptionsStr.append(tagValue.m_tag)
                         chartOptionsStr.append("=")
                         chartOptionsStr.append(tagValue.m_value)
@@ -736,7 +736,7 @@ class EClientSocket(object):
                 if realTimeBarsOptionsCount > 0:
                     i = 0
                     while i < realTimeBarsOptionsCount:
-                        tagValue = realTimeBarsOptions.get(i)
+                        tagValue = realTimeBarsOptions[i]
                         realTimeBarsOptionsStr.append(tagValue.m_tag)
                         realTimeBarsOptionsStr.append("=")
                         realTimeBarsOptionsStr.append(tagValue.m_value)
@@ -842,7 +842,7 @@ class EClientSocket(object):
                 if mktDepthOptionsCount > 0:
                     i = 0
                     while i < mktDepthOptionsCount:
-                        tagValue = mktDepthOptions.get(i)
+                        tagValue = mktDepthOptions[i]
                         mktDepthOptionsStr.append(tagValue.m_tag)
                         mktDepthOptionsStr.append("=")
                         mktDepthOptionsStr.append(tagValue.m_value)
@@ -948,7 +948,7 @@ class EClientSocket(object):
                 comboLeg = None
                 i = 0
                 while i < len(contract.m_comboLegs):
-                    comboLeg = contract.m_comboLegs.get(i)
+                    comboLeg = contract.m_comboLegs[i]
                     if comboLeg.m_shortSaleSlot != 0 or not self.IsEmpty(comboLeg.m_designatedLocation):
                         self.error(id, EClientErrors.UPDATE_TWS, "  It does not support SSHORT flag for combo legs.")
                         return
@@ -990,7 +990,7 @@ class EClientSocket(object):
                 comboLeg = None
                 i = 0
                 while i < len(contract.m_comboLegs):
-                    comboLeg = contract.m_comboLegs.get(i)
+                    comboLeg = contract.m_comboLegs[i]
                     if comboLeg.m_exemptCode != -1:
                         self.error(id, EClientErrors.UPDATE_TWS, "  It does not support exemptCode parameter.")
                         return
@@ -1021,7 +1021,7 @@ class EClientSocket(object):
                 orderComboLeg = None
                 i = 0
                 while i < len(order.m_orderComboLegs):
-                    orderComboLeg = order.m_orderComboLegs.get(i)
+                    orderComboLeg = order.m_orderComboLegs[i]
                     if orderComboLeg.m_price != Double.MAX_VALUE:
                         self.error(id, EClientErrors.UPDATE_TWS, "  It does not support per-leg prices for order combo legs.")
                         return
@@ -1108,7 +1108,7 @@ class EClientSocket(object):
                     comboLeg = None
                     i = 0
                     while i < len(contract.m_comboLegs):
-                        comboLeg = contract.m_comboLegs.get(i)
+                        comboLeg = contract.m_comboLegs[i]
                         self.send(comboLeg.m_conId)
                         self.send(comboLeg.m_ratio)
                         self.send(comboLeg.m_action)
@@ -1128,7 +1128,7 @@ class EClientSocket(object):
                     self.send(len(order.m_orderComboLegs))
                     i = 0
                     while i < len(order.m_orderComboLegs):
-                        orderComboLeg = order.m_orderComboLegs.get(i)
+                        orderComboLeg = order.m_orderComboLegs[i]
                         self.sendMax(orderComboLeg.m_price)
                         i += 1
             if self.m_serverVersion >= self.MIN_SERVER_VER_SMART_COMBO_ROUTING_PARAMS and self.BAG_SEC_TYPE.lower() == contract.m_secType.lower():
@@ -1138,7 +1138,7 @@ class EClientSocket(object):
                 if smartComboRoutingParamsCount > 0:
                     i = 0
                     while i < smartComboRoutingParamsCount:
-                        tagValue = smartComboRoutingParams.get(i)
+                        tagValue = smartComboRoutingParams[i]
                         self.send(tagValue.m_tag)
                         self.send(tagValue.m_value)
                         i += 1
@@ -1269,7 +1269,7 @@ class EClientSocket(object):
                     if algoParamsCount > 0:
                         i = 0
                         while i < algoParamsCount:
-                            tagValue = algoParams.get(i)
+                            tagValue = algoParams[i]
                             self.send(tagValue.m_tag)
                             self.send(tagValue.m_value)
                             i += 1
@@ -1283,7 +1283,7 @@ class EClientSocket(object):
                 if orderMiscOptionsCount > 0:
                     i = 0
                     while i < orderMiscOptionsCount:
-                        tagValue = orderMiscOptions.get(i)
+                        tagValue = orderMiscOptions[i]
                         orderMiscOptionsStr.append(tagValue.m_tag)
                         orderMiscOptionsStr.append("=")
                         orderMiscOptionsStr.append(tagValue.m_value)

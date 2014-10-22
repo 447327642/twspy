@@ -61,7 +61,7 @@ class EWrapperMsgGenerator(AnyWrapperMsgGenerator):
             if contract.m_comboLegs is not None:
                 i = 0
                 while i < len(contract.m_comboLegs):
-                    comboLeg = contract.m_comboLegs.get(i)
+                    comboLeg = contract.m_comboLegs[i]
                     msg += " leg " + (i + 1) + ": "
                     msg += "conId=" + comboLeg.m_conId
                     msg += " ratio=" + comboLeg.m_ratio
@@ -72,7 +72,7 @@ class EWrapperMsgGenerator(AnyWrapperMsgGenerator):
                     msg += " designatedLocation=" + comboLeg.m_designatedLocation
                     msg += " exemptCode=" + comboLeg.m_exemptCode
                     if order.m_orderComboLegs is not None and len(contract.m_comboLegs) == len(order.m_orderComboLegs):
-                        orderComboLeg = order.m_orderComboLegs.get(i)
+                        orderComboLeg = order.m_orderComboLegs[i]
                         msg += " price=" + Util.DoubleMaxString(orderComboLeg.m_price)
                     msg += ";"
                     i += 1

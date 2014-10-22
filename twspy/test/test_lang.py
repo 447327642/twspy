@@ -1,6 +1,19 @@
 from twspy.lang.python import overloaded
 
 
+def test_vector():
+    from twspy.lang.java import Vector
+    v = Vector()
+    v.add(123)
+    assert v == [123]
+    v = Vector(10)
+    v.add(4)
+    v.add(2)
+    assert v == [4, 2]
+    v = Vector([1, 2, 3])
+    assert v == [1, 2, 3]
+
+
 class TestOverloading():
     def test_simple(self):
         @overloaded

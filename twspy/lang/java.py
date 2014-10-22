@@ -87,14 +87,17 @@ class StringBuilder(list):
         return ''.join(self)
 
 
-class Vector(list):
-    add = list.append
-    get = list.__getitem__
-
-
 class Thread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.daemon = True
 
     isInterrupted = lambda self: False
+
+
+class Vector(list):
+    def __init__(self, arg=0):
+        if not isinstance(arg, int):
+            list.__init__(self, arg)
+
+    add = list.append

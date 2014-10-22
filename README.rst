@@ -1,5 +1,8 @@
 twspy
 =====
+.. image:: https://travis-ci.org/bdkearns/twspy.svg?branch=master
+    :target: https://travis-ci.org/bdkearns/twspy
+
 twspy is an unofficial Python implementation of the Interactive Brokers Trader Workstation API. It is similar to ibpy in that it uses java2python to translate the official Java API to Python. On top of the standard API, a new implementation of a "Pythonic" wrapper is included.
 
 Reasons to use twspy

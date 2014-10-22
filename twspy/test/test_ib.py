@@ -1,3 +1,8 @@
+def test_version():
+    import re
+    from twspy.ib import __version__
+    assert re.match('[0-9]{3}\.[0-9]{2}$', __version__)
+
 def test_builder():
     from twspy.ib.Builder import Builder
     b = Builder()

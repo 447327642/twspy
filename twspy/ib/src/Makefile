@@ -1,4 +1,5 @@
-JAR := twsapi_macunix.971.01.jar
+VER := 971.01
+JAR := twsapi_macunix.$(VER).jar
 URL := http://interactivebrokers.github.io/downloads/$(JAR)
 
 all: $(JAR) IBJts
@@ -10,6 +11,7 @@ $(JAR):
 IBJts: $(JAR)
 	rm -rf IBJts
 	jar -xf $(JAR)
+	echo "$(VER)" > IBJts/.version
 	find IBJts -exec touch {} \;
 
 clean:

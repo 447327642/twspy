@@ -10,6 +10,8 @@ from twspy.ib.EWrapper import EWrapper
 
 from ._version import __version__  # noqa
 
+__all__ = ['Connection', 'messages']
+
 sentinel = object()
 
 functions = dict((name, inspect.getargspec(func).args[1:])

@@ -12,12 +12,13 @@ from ._version import __version__  # noqa
 
 sentinel = object()
 
-functions = {name: inspect.getargspec(func).args[1:]
-             for name, func in inspect.getmembers(EWrapper, callable)
-             if not name.startswith('error') and not name.startswith('_')}
+functions = dict((name, inspect.getargspec(func).args[1:])
+                 for name, func in inspect.getmembers(EWrapper, callable)
+                 if not name.startswith('error') and not name.startswith('_'))
 functions['error'] = ['id', 'errorCode', 'errorMsg']
 
-messages = {name: namedtuple(name, args) for name, args in functions.items()}
+messages = dict((name, namedtuple(name, args))
+                for name, args in functions.items())
 
 Listener = namedtuple('Listener', 'func args options')
 

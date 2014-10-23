@@ -30,8 +30,8 @@ class TestBasic:
         from twspy import Dispatcher
         from twspy.ib.EWrapper import EWrapper
         names = set(dir(Dispatcher)) - set(dir(EWrapper))
-        names -= {'__locals__'}  # py32 and py33 add this
-        assert names == {'_dispatch'}
+        names -= set(['__locals__'])  # py32 and py33 add this
+        assert names == set(['_dispatch'])
 
     def test_connection_attributes(self, con):
         assert not con.isConnected()

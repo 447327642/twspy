@@ -1,6 +1,6 @@
 modulePrologueHandlers = [
-    'from ..lang.python import long, overloaded',
-    'from ..lang.java import DataInputStream, DataOutputStream, Double, Integer, Socket, StringBuilder',
+    'from ._lang.python import long, overloaded',
+    'from ._lang.java import DataInputStream, DataOutputStream, Double, Integer, Socket, StringBuilder',
     'from .Builder import Builder',
     'from .EClientErrors import EClientErrors',
     'from .EReader import EReader',

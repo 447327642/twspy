@@ -1,6 +1,6 @@
 """ generated source for module TagValue """
 from __future__ import print_function
-from ..lang.python import overloaded
+from ._lang.python import overloaded
 from .Util import Util
 #  Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
 #  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. 

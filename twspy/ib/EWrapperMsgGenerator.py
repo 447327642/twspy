@@ -1,6 +1,6 @@
 """ generated source for module EWrapperMsgGenerator """
 from __future__ import print_function
-from ..lang.java import Date, DateFormat, Double
+from ._lang.java import Date, DateFormat, Double
 from .AnyWrapperMsgGenerator import AnyWrapperMsgGenerator
 from .EClientSocket import EClientSocket
 from .MarketDataType import MarketDataType

@@ -1,4 +1,4 @@
 modulePrologueHandlers = [
-    'from ..lang.python import classmethod, overloaded',
-    'from ..lang.java import Integer',
+    'from ._lang.python import classmethod, overloaded',
+    'from ._lang.java import Integer',
 ]

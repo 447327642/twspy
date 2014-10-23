@@ -36,7 +36,7 @@ class TestUtil:
         assert Util.StringCompareIgnCase("BLAH", "test") == -1
 
     def test_vector_equals_unordered(self):
-        from twspy.lang.java import Vector
+        from twspy.ib._lang.java import Vector
         from twspy.ib.Util import Util
         a = [42*100, 2, 5, 1]
         b = [1, 2, 5, 42*100]
@@ -51,7 +51,7 @@ class TestUtil:
         assert not Util.VectorEqualsUnordered(b, Vector(c))
 
     def test_max_string(self):
-        from twspy.lang.java import Integer, Double
+        from twspy.ib._lang.java import Integer, Double
         from twspy.ib.Util import Util
         assert Util.IntMaxString(2) == "2"
         assert Util.IntMaxString(Integer.MAX_VALUE) == ""

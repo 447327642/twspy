@@ -1,7 +1,7 @@
 """ generated source for module EReader """
 from __future__ import print_function
-from ..lang.python import overloaded
-from ..lang.java import Boolean, Double, Integer, Long, StringBuffer, Thread, Vector
+from ._lang.python import overloaded
+from ._lang.java import Boolean, Double, Integer, Long, StringBuffer, Thread, Vector
 from .ComboLeg import ComboLeg
 from .CommissionReport import CommissionReport
 from .Contract import Contract

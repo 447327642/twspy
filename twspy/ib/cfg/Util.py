@@ -1,6 +1,6 @@
 modulePrologueHandlers = [
-    'from ..lang.python import cmp',
-    'from ..lang.java import Double, Integer',
+    'from ._lang.python import cmp',
+    'from ._lang.java import Double, Integer',
 ]
 
 moduleOutputSubs = [

@@ -5,7 +5,7 @@
 
 import unittest
 
-from twspy.lang.overloading import overloaded
+from twspy.ib._lang.overloading import overloaded
 
 __metaclass__ = type # New-style classes by default
 

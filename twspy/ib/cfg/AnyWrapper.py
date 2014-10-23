@@ -1,3 +1,3 @@
 modulePrologueHandlers = [
-    'from ..lang.python import overloaded',
+    'from ._lang.python import overloaded',
 ]

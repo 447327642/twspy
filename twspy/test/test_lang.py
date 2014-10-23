@@ -1,8 +1,8 @@
-from twspy.lang.python import overloaded
+from twspy.ib._lang.python import overloaded
 
 
 def test_vector():
-    from twspy.lang.java import Vector
+    from twspy.ib._lang.java import Vector
     v = Vector()
     v.add(123)
     assert v == [123]

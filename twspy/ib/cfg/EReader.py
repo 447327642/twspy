@@ -2,8 +2,8 @@ from java2python.lang import tokens
 from java2python.lib import FS
 
 modulePrologueHandlers = [
-    'from ..lang.python import overloaded',
-    'from ..lang.java import Boolean, Double, Integer, Long, StringBuffer, Thread, Vector',
+    'from ._lang.python import overloaded',
+    'from ._lang.java import Boolean, Double, Integer, Long, StringBuffer, Thread, Vector',
     'from .ComboLeg import ComboLeg',
     'from .CommissionReport import CommissionReport',
     'from .Contract import Contract',

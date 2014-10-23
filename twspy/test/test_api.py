@@ -21,9 +21,10 @@ class TestBasic:
 
     def test_messages(self):
         from twspy import messages
-        assert 'error_0' not in messages
         assert 'nextValidId' in messages
         assert issubclass(messages['error'], tuple)
+        for name in messages:
+            assert '_' not in name
 
     def test_dispatcher(self):
         from twspy import Dispatcher

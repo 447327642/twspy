@@ -1,13 +1,16 @@
+import re
+
 from setuptools import find_packages, setup
 
-exec(open('twspy/_version.py').read())
+version = re.search(r'(?m)^__version__ = [\'"](.+)[\'"]$',
+                    open('twspy/__init__.py').read()).group(1)
 
 long_description = '\n'.join([open('README.rst').read(),
                               open('NEWS.rst').read()])
 
 setup(
     name='twspy',
-    version=__version__,  # noqa
+    version=version,
 
     description='Python API to Interactive Brokers TWS',
     long_description=long_description,

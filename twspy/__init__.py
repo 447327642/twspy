@@ -8,9 +8,8 @@ from collections import namedtuple
 from twspy.ib.EClientSocket import EClientSocket
 from twspy.ib.EWrapper import EWrapper
 
-from ._version import __version__  # noqa
-
 __all__ = ['Connection', 'messages']
+__version__ = '0.1.3'
 
 sentinel = object()
 

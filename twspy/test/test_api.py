@@ -2,7 +2,7 @@ import pytest
 
 from twspy import Connection
 
-from .support import config, HAS_TWS, sleep_until
+from .support import HAS_TWS, config, sleep_until
 
 
 @pytest.fixture

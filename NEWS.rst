@@ -1,5 +1,9 @@
 News
 ----
+* 0.1.3
+
+  * Support running under Python 2.6
+
 * 0.1.2
 
   * Fix execution using PyPy

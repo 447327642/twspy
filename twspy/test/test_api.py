@@ -185,6 +185,43 @@ class TestConnected:
         if type(seen[0]).__name__ == 'error':
             pytest.xfail(seen[0].errorMsg)
 
+    def test_place_order(self, con):
+        from twspy import Contract, Order, TagValue
+
+        @con.listener('nextValidId')
+        def nextValidId(msg):
+            global next_order_id
+            next_order_id = msg.orderId
+
+        global next_order_id
+        next_order_id = None
+        con.connect()
+        assert sleep_until(lambda: next_order_id is not None, 1.0)
+
+        c = Contract()
+        c.m_symbol = 'BRK B'
+        c.m_secType = 'STK'
+        c.m_exchange = 'SMART'
+        c.m_primaryExch = 'NYSE'
+
+        o = Order()
+        o.m_action = 'BUY'
+        o.m_totalQuantity = 1
+        o.m_orderType = 'LMT'
+        o.m_lmtPrice = 0.01
+        o.m_algoStrategy = 'Vwap'
+        o.m_algoParams = [TagValue('maxPctVol', '0.10')]
+
+        @con.listener('openOrder')
+        def openOrder(msg):
+            if msg.orderId == next_order_id:
+                seen.append(msg)
+
+        seen = []
+        con.placeOrder(next_order_id, c, o)
+        assert sleep_until(lambda: seen, 1.0)
+        assert seen[0].orderState.m_status == "PreSubmitted"
+
     def test_exception_in_handler_register(self, con):
         def callback(msg):
             seen.append(True)

@@ -185,7 +185,7 @@ class TestConnected:
         if type(seen[0]).__name__ == 'error':
             pytest.xfail(seen[0].errorMsg)
 
-    def test_place_order(self, con):
+    def test_place_cancel_order(self, con):
         from twspy import Contract, Order, TagValue
 
         @con.listener('nextValidId')
@@ -221,6 +221,11 @@ class TestConnected:
         con.placeOrder(next_order_id, c, o)
         assert sleep_until(lambda: seen, 1.0)
         assert seen[0].orderState.m_status == "PreSubmitted"
+
+        seen = []
+        con.cancelOrder(next_order_id)
+        assert sleep_until(lambda: seen, 1.0)
+        assert seen[0].orderState.m_status == "PendingCancel"
 
     def test_exception_in_handler_register(self, con):
         def callback(msg):

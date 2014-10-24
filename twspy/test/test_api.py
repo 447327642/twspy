@@ -162,10 +162,10 @@ class TestConnected:
 
         def callback(msg):
             if msg.date.startswith('finished'):
-                seen.append(True)
+                seen.append(msg)
 
         def error(msg):
-            if msg.errorCode == 2105:
+            if msg.errorCode == 2105:  # hist data farm is not connected
                 seen.append(msg)
 
         seen = []
@@ -182,7 +182,7 @@ class TestConnected:
         con.reqHistoricalData(1, c, e, "5 D", "1 hour", "TRADES", 1, 1, None)
 
         assert sleep_until(lambda: seen, 5.0)
-        if seen[0] is not True:
+        if type(seen[0]).__name__ == 'error':
             pytest.xfail(seen[0].errorMsg)
 
     def test_exception_in_handler_register(self, con):

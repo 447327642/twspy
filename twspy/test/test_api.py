@@ -44,7 +44,8 @@ class TestBasic:
         assert callback in con.getListeners('openOrderEnd')
 
     def test_register_unregister(self, con):
-        callback = lambda msg: None
+        def callback(msg):
+            pass
 
         with pytest.raises(ValueError):
             con.unregister('nextValidId', callback)
@@ -67,8 +68,9 @@ class TestBasic:
                 func('nextValidId', 'test')
 
     def test_register_extra_args(self, con):
+        def callback(msg, arg):
+            seen.append(arg)
         seen = []
-        callback = lambda msg, arg: seen.append(arg)
         con.register('nextValidId', callback, con)
         con.client.wrapper().nextValidId(42)
         assert sleep_until(lambda: seen, 1.0)
@@ -101,14 +103,16 @@ class TestBasic:
         ]
 
     def test_failing_request(self, con):
-        from twspy.ib.EClientErrors import EClientErrors
+        def callback(msg):
+            seen.append(msg)
         seen = []
-        callback = lambda msg: seen.append(msg)
         con.register('error', callback)
         # fake a connection
         con.client.m_connected = True
         con.client.m_serverVersion = 42
         con.reqScannerParameters()
+
+        from twspy.ib.EClientErrors import EClientErrors
         expected = EClientErrors.FAIL_SEND_REQSCANNERPARAMETERS.m_errorCode
         # reader thread might fail first, check all errors
         for msg in seen:

@@ -14,21 +14,15 @@ def con(request):
 
 
 class TestBasic:
-    def test_version(self):
-        import re
-        from twspy import __version__
-        assert re.match('[0-9]+\.[0-9]+\.[0-9]+', __version__)
-
     def test_messages(self):
-        from twspy import messages
+        from twspy.api import messages
         assert 'nextValidId' in messages
         assert issubclass(messages['error'], tuple)
         for name in messages:
             assert '_' not in name
 
     def test_dispatcher(self):
-        from twspy import Dispatcher
-        from twspy.ib.EWrapper import EWrapper
+        from twspy.api import Dispatcher, EWrapper
         names = set(dir(Dispatcher)) - set(dir(EWrapper))
         names -= set(['__locals__'])  # py32 and py33 add this
         assert names == set(['_dispatch'])
@@ -140,7 +134,7 @@ class TestConnected:
             assert sleep_until(lambda: not reader.is_alive(), 1.0)
 
     def test_basic_requests(self, con):
-        from twspy.ib.ExecutionFilter import ExecutionFilter
+        from twspy import ExecutionFilter
 
         def callback(msg):
             seen[type(msg).__name__] = msg
@@ -164,7 +158,7 @@ class TestConnected:
 
     def test_historical_data(self, con):
         import time
-        from twspy.ib.Contract import Contract
+        from twspy import Contract
 
         def callback(msg):
             if msg.date.startswith('finished'):

@@ -1,5 +1,10 @@
 News
 ----
+* 0.2.0
+
+  * Restructure package contents
+  * Improve test coverage
+
 * 0.1.3
 
   * Support running under Python 2.6

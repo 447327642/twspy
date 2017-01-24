@@ -8,7 +8,7 @@ twspy is an unofficial Python implementation of the Interactive Brokers Trader W
 Reasons to use twspy
 --------------------
 - Implements TWS API 971.01
-- Generated using an `updated fork of java2python <https://github.com/bdkearns/java2python>`_ instead of manually applied changes
+- Generated using an updated version of java2python instead of manually applied changes
 - Supports both Python 2.6+ and Python 3.2+
 - Simpler implementation of the "Pythonic" wrapper
 - Tested using added test suite based on pytest

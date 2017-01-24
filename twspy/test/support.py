@@ -20,6 +20,7 @@ def check_for_tws():
     s.close()
     return True
 
+
 HAS_TWS = check_for_tws()
 
 

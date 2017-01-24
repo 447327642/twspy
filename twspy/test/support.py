@@ -16,7 +16,7 @@ def check_for_tws():
         s.connect((config.TWS_HOST, config.TWS_PORT))
     except socket.error:
         return False
-    s.shutdown(socket.SHUT_RDWR)
+    s.send(b'\x00')  # avoids deadlocking certain versions of tws
     s.close()
     return True
 

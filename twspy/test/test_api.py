@@ -220,12 +220,19 @@ class TestConnected:
         seen = []
         con.placeOrder(next_order_id, c, o)
         assert sleep_until(lambda: seen, 1.0)
-        assert seen[0].orderState.m_status == "PreSubmitted"
+        assert seen[0].orderState.m_status in ["PreSubmitted", "Submitted"]
+
+        con.unregister('openOrder', openOrder)
+
+        @con.listener('orderStatus')
+        def orderStatus(msg):
+            if msg.orderId == next_order_id:
+                seen.append(msg)
 
         seen = []
         con.cancelOrder(next_order_id)
         assert sleep_until(lambda: seen, 1.0)
-        assert seen[0].orderState.m_status == "PendingCancel"
+        assert seen[0].status == "Cancelled"
 
     def test_exception_in_handler_register(self, con):
         def callback(msg):
